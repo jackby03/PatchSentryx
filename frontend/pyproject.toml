@@ -1,13 +1,10 @@
 [project]
-name = "PatchSentryx"
+name = "frontend"
 version = "0.1.0"
-description = "Vulnerability Identification with LLMs"
-readme = "README.md"
+description = "Frontend for PatchSentryx"
 requires-python = ">=3.12"
 dependencies = [
-    "flet>=0.27.6",
 ]
-dynamic = ["version"]
 
 [build-system]
 requires = ["hatchling"]
