@@ -1,16 +1,17 @@
 import uuid
 
-from pydantic import Field, BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from pydantic.v1 import validator
 
 from core.errores import InvalidStateError
-from core.security import verify_password, get_password_hash
+from core.security import get_password_hash, verify_password
 
 
 class User(BaseModel):
     """
     Domain Entity representing a User.
     """
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
@@ -21,7 +22,7 @@ class User(BaseModel):
         orm_mode = True
         from_attributes = True
 
-    @validator('name')
+    @validator("name")
     def name_must_not_be_empty(cls, v):
         if not v.strip():
             raise ValueError("Name must not be empty.")

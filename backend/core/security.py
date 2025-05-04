@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from jose import JWTError, jwt
@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from app.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
@@ -18,6 +19,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password: str) -> str:
     """
     Hash a password using bcrypt.
@@ -27,6 +29,7 @@ def get_password_hash(password: str) -> str:
     """
     return pwd_context.hash(password)
 
+
 # JWT Token Handling
 SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
@@ -34,7 +37,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """ Creates a JWT access token."""
+    """Creates a JWT access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -53,6 +56,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
             )
     encode_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encode_jwt
+
 
 def decode_access_token(token: str) -> Optional[dict]:
     """Decodes a JWT access token."""

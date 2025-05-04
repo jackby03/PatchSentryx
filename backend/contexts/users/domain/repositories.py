@@ -10,6 +10,7 @@ class UserRepository(abc.ABC):
     Abstract base class for user repository.
     Defines the contract for how the application interacts with the user data store.
     """
+
     @abc.abstractmethod
     async def add(self, user: User) -> None:
         """Adds a new user to the repository."""

@@ -27,9 +27,10 @@ async def get_rabbitmq_connection() -> AbstractRobustConnection:
 @retry(
     stop=stop_after_attempt(5),
     wait=wait_fixed(2),
-    retry=retry_if_exception_type(
-        (asyncio.TimeoutError, aio_pika.exceptions.AMQPConnectionError)
-    ),
+    retry=retry_if_exception_type((
+        asyncio.TimeoutError,
+        aio_pika.exceptions.AMQPConnectionError,
+    )),
 )
 async def connect_to_rabbitmq() -> AbstractRobustConnection:
     try:
