@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     # Database settings
     DATABASE_URL: str = (
-        "postgresql+asyncpg://user:password@localhost:5432/contextflow_db"
+        "postgresql+asyncpg://user:password@localhost:5432/sample_db"
     )
 
     # RabbitMQ settings
