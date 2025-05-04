@@ -1,11 +1,10 @@
 from typing import AsyncGenerator
 
-from backend.app.config import settings
-from sqlalchemy.ext.asyncio import (
-AsyncSession, async_sessionmaker, create_async_engine
-)
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import DeclarativeBase
 
+from backend.app.config import settings
 
 engine = create_async_engine(
     settings.DATABASE_URL,
@@ -20,8 +19,10 @@ AsyncSessionFactory = async_sessionmaker(
     class_=AsyncSession,
 )
 
+
 class Base(DeclarativeBase):
     pass
+
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -35,6 +36,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
+
 
 async def db_session_manager() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -50,6 +52,7 @@ async def db_session_manager() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
+
 async def init_db():
     """
     Initialize the database.
@@ -60,6 +63,7 @@ async def init_db():
             print("Database connection established.")
     except Exception as e:
         print(f"Database connection failed: {e}")
+
 
 async def close_db():
     """Close the database engine connection."""

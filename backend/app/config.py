@@ -16,9 +16,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Database settings
-    DATABASE_URL: str = (
-        "postgresql+asyncpg://user:password@localhost:5432/sample_db"
-    )
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/sample_db"
 
     # RabbitMQ settings
     RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
@@ -28,9 +26,11 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
+
 # Cache the settings object to avoid reloading it multiple times
 @lru_cache()
 def get_settings() -> Settings:
     return Settings()
+
 
 settings = get_settings()

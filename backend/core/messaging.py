@@ -1,9 +1,10 @@
 import asyncio
-from typing import TypeAlias, Optional, AsyncGenerator
+from typing import AsyncGenerator, Optional, TypeAlias
 
 import aio_pika
 from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection
-from tenacity import (retry, retry_if_exception_type, stop_after_attempt, wait_fixed)
+from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
+                      wait_fixed)
 
 from backend.app.config import settings
 from backend.core.errores import MessagingError
@@ -28,33 +29,34 @@ async def get_rabbitmq_connection() -> AbstractRobustConnection:
     wait=wait_fixed(2),
     retry=retry_if_exception_type(
         (asyncio.TimeoutError, aio_pika.exceptions.AMQPConnectionError)
-    )
+    ),
 )
 async def connect_to_rabbitmq() -> AbstractRobustConnection:
     try:
-        connection = await aio_pika.connect_robust(
-            settings.RABBITMQ_URL, timeout=10
-        )
+        connection = await aio_pika.connect_robust(settings.RABBITMQ_URL, timeout=10)
         connection.add_close_callback(on_connection_close)
         connection.add_reconnect_callback(on_connection_reconnect)
         return connection
     except (
-            ConnectionError,
-            asyncio.TimeoutError,
-            aio_pika.exceptions.AMQPConnectionError
+        ConnectionError,
+        asyncio.TimeoutError,
+        aio_pika.exceptions.AMQPConnectionError,
     ) as e:
         print(f"Failed to connect to RabbitMQ: {e}. Retrying...")
         raise
 
+
 def on_connection_close(
-        connection: AbstractRobustConnection, exc: Optional[BaseException]
+    connection: AbstractRobustConnection, exc: Optional[BaseException]
 ):
     print(f"RabbitMQ connection closed. Exception: {exc}")
     global _connection
     _connection = None
 
+
 def on_connection_reconnect(connection: AbstractRobustConnection):
     print("RabbitMQ connection reconnected.")
+
 
 async def close_rabbitmq_connection():
     global _connection
@@ -62,6 +64,7 @@ async def close_rabbitmq_connection():
         await _connection.close()
         _connection = None
         print("RabbitMQ connection closed.")
+
 
 async def get_rabbitmq_channel() -> AsyncGenerator[Channel, None]:
     """
@@ -82,13 +85,15 @@ async def get_rabbitmq_channel() -> AsyncGenerator[Channel, None]:
             await channel.close()
             print("RabbitMQ channel closed.")
 
+
 # --- Utility functions for Publishing ---
 
+
 async def declare_exchange(
-        channel: Channel,
-        exchange_name: str,
-        exchange_type: str = "direct",
-        durable: bool = True,
+    channel: Channel,
+    exchange_name: str,
+    exchange_type: str = "direct",
+    durable: bool = True,
 ):
     """Declares an exchange."""
     print(
@@ -98,43 +103,53 @@ async def declare_exchange(
         name=exchange_name, type=aio_pika.ExchangeType(exchange_type), durable=durable
     )
 
+
 async def declare_queue(
-        channel: Channel,
-        queue_name: str,
-        durable: bool = True,
-        arguments: Optional[dict] = None,
+    channel: Channel,
+    queue_name: str,
+    durable: bool = True,
+    arguments: Optional[dict] = None,
 ):
     """Declares a queue."""
     print(f"Declaring queue: {queue_name}, durable: {durable}")
-    await channel.declare_queue(
-        name=queue_name, durable=durable, arguments=arguments
-    )
+    await channel.declare_queue(name=queue_name, durable=durable, arguments=arguments)
 
-async def bind_queue(channel: Channel, queue_name: str, exchange_name: str, routing_key: str,
+
+async def bind_queue(
+    channel: Channel,
+    queue_name: str,
+    exchange_name: str,
+    routing_key: str,
 ):
     """Binds a queue to an exchange."""
-    print(f"Binding queue: {queue_name} to exchange: {exchange_name} with routing key: {routing_key}")
+    print(
+        f"Binding queue: {queue_name} to exchange: {exchange_name} with routing key: {routing_key}"
+    )
     queue = await channel.get_queue(queue_name)
     await queue.bind(exchange=exchange_name, routing_key=routing_key)
 
+
 async def publish_message(
-        channel: Channel,
-        exchange_name: str,
-        routing_key: str,
-        body: bytes,
-        content_type: str = "application/json",
-        delivery_mode: aio_pika.DeliveryMode = aio_pika.DeliveryMode.PERSISTENT,
+    channel: Channel,
+    exchange_name: str,
+    routing_key: str,
+    body: bytes,
+    content_type: str = "application/json",
+    delivery_mode: aio_pika.DeliveryMode = aio_pika.DeliveryMode.PERSISTENT,
 ):
     """Publishes a message to an exchange."""
-    print(f"Publishing message to exchange: {exchange_name}, routing key: {routing_key}")
+    print(
+        f"Publishing message to exchange: {exchange_name}, routing key: {routing_key}"
+    )
     message = aio_pika.Message(
         body=body,
         content_type=content_type,
         delivery_mode=delivery_mode,
     )
-    exchange  = await channel.get_exchange(exchange_name)
+    exchange = await channel.get_exchange(exchange_name)
     await exchange.publish(message, routing_key=routing_key)
     print("Message published successfully.")
+
 
 async def setup_messaing_infrastructure(channel: Channel):
     """Set up necessary exchanges and queues."""
