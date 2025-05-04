@@ -6,8 +6,8 @@ from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection
 from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
                       wait_fixed)
 
-from backend.app.config import settings
-from backend.core.errores import MessagingError
+from app.config import settings
+from core.errores import MessagingError
 
 Channel: TypeAlias = AbstractRobustChannel
 
