@@ -4,6 +4,7 @@ from pydantic import Field, BaseModel, EmailStr
 from pydantic.v1 import validator
 
 from core.errores import InvalidStateError
+from core.security import verify_password, get_password_hash
 
 
 class User(BaseModel):
@@ -29,10 +30,10 @@ class User(BaseModel):
     def set_password(self, plain_password: str):
         if not plain_password or len(plain_password) < 8:
             raise ValueError("Password must be at least 8 characters long.")
-        self.hashed_password = self.hash_password(plain_password)
+        self.hashed_password = get_password_hash(plain_password)
 
     def check_password(self, plain_password: str) -> bool:
-        pass
+        return verify_password(plain_password, self.hashed_password)
 
     def activate(self):
         """Active the user."""
