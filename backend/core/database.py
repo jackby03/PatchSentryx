@@ -59,7 +59,7 @@ async def init_db():
     Optional create tables if they don´t exist. (Development/Testing)
     """
     try:
-        async with engine.connect() as conn:
+        async with engine.connect():
             print("Database connection established.")
     except Exception as e:
         print(f"Database connection failed: {e}")
