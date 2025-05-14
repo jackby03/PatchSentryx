@@ -14,7 +14,6 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "python-jose>=3.4.0",
     "python-multipart>=0.0.20",
-    "ruff>=0.11.8",
     "sqlalchemy>=2.0.40",
     "tenacity>=9.1.2",
 ]
