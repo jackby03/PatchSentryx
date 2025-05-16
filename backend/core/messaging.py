@@ -7,7 +7,7 @@ from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
                       wait_fixed)
 
 from app.config import settings
-from core.errores import MessagingError
+from core.errors import MessagingError
 
 Channel: TypeAlias = AbstractRobustChannel
 

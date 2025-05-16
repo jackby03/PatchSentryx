@@ -3,7 +3,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from contexts.users.application.queries import UserDTO, GetUserByIdQuery, ListUsersQuery
+from contexts.users.application.queries import (GetUserByIdQuery,
+                                                ListUsersQuery, UserDTO)
 from contexts.users.domain.repositories import UserRepository
 
 
@@ -20,17 +21,22 @@ class GetUserByIdQueryHandler:
         return UserDTO.model_validate(user)
         # return UserDTO.from_orm(user)
 
+
 class ListUsersQueryHandler:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
     async def handle(self, query: ListUsersQuery) -> List[UserDTO]:
-        print(f"Handling ListUsersQuery with limit: {query.limit}, offset: {query.offset}")
+        print(
+            f"Handling ListUsersQuery with limit: {query.limit}, offset: {query.offset}"
+        )
         users = await self.user_repository.list_all()
         filtered_users = users
         if query.is_active is not None:
-            filtered_users = [user for user in users if user.is_active == query.is_active]
+            filtered_users = [
+                user for user in users if user.is_active == query.is_active
+            ]
 
-        paginated_users = filtered_users[query.offset:query.offset + query.limit]
+        paginated_users = filtered_users[query.offset : query.offset + query.limit]
 
         return [UserDTO.model_validate(user) for user in paginated_users]

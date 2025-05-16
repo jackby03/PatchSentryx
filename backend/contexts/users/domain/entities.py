@@ -3,7 +3,7 @@ import uuid
 from pydantic import BaseModel, EmailStr, Field
 from pydantic.v1 import validator
 
-from core.errores import InvalidStateError
+from core.errors import InvalidStateError
 from core.security import get_password_hash, verify_password
 
 

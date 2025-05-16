@@ -1,7 +1,7 @@
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository
-from core.errores import DomainError
+from core.errors import DomainError
 
 
 class CreateUserCommandHandler:
@@ -12,9 +12,7 @@ class CreateUserCommandHandler:
         print(f"Handling CreateUserCommand for email: {command.email}")
         existing_user = await self.user_repository.get_by_email(command.email)
         if existing_user:
-            raise DomainError(
-                f"User with email {command.email} already exists."
-            )
+            raise DomainError(f"User with email {command.email} already exists.")
         user = User(
             name=command.name,
             email=command.email,

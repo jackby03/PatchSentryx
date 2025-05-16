@@ -7,6 +7,6 @@ from core.database import get_db_session
 from core.messaging import Channel  # Import Channel type
 from core.messaging import get_rabbitmq_channel
 
-dbSession = Annotated[AsyncSession, Depends(get_db_session)]
+DbSession = Annotated[AsyncSession, Depends(get_db_session)]
 
-dbChannel = Annotated[Channel, Depends(get_rabbitmq_channel)]
+MqChannel = Annotated[Channel, Depends(get_rabbitmq_channel)]

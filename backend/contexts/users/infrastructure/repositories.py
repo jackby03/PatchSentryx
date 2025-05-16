@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository
 from contexts.users.infrastructure.models import UserModel
-from core.errores import DatabaseError
+from core.errors import DatabaseError
 
 
 def _map_model_to_entity(model):
