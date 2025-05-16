@@ -8,32 +8,50 @@ from starlette.responses import JSONResponse
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.application.queries import (GetUserByIdQuery,
                                                 ListUsersQuery, UserDTO)
-from contexts.users.infrastructure.messaging import UserCommandPublisher
-from contexts.users.interfaces.dependencies import (CreateUserHandler,
-                                                    GetUserByIdHandler,
-                                                    ListUsersHandler)
-from core.dependencies import MqChannel
+from contexts.users.infrastructure.messaging import \
+    UserCommandPublisher  # Import publisher logic
+from contexts.users.interfaces.dependencies import (  # Use handler dependencies directly now; UserCmdPublisher, # Dependency for direct publishing if needed
+    CreateUserHandler, GetUserByIdHandler, ListUsersHandler)
+from core.dependencies import \
+    MqChannel  # Import channel dependency for direct publishing
 from core.errors import DomainError, EntityNotFoundError
 
 router = APIRouter()
 
+# --- Command Endpoints ---
+
 
 @router.post(
     "/",
-    response_model=UserDTO,
+    response_model=UserDTO,  # Return DTO of the created user
     status_code=status.HTTP_201_CREATED,
-    summary="Register a new user (via async command handler)",
-    description="Accepts user registration details and publish a command to create the user.",
+    summary="Register a new user (via async command)",
+    description="Accepts user registration details and publishes a command to create the user asynchronously.",
 )
 async def register_user_command(
+    # Option 1: Get channel and publisher manually
     channel: MqChannel,
     command_data: CreateUserCommand = Body(...),
+    # Option 2: Inject publisher directly (if publisher dependency is set up)
+    # publisher: UserCmdPublisher,
+    # command_data: CreateUserCommand = Body(...),
 ):
-    publisher = UserCommandPublisher(channel)
+    """
+    Handles the request to create a new user by publishing a command to RabbitMQ.
+    """
+    publisher = UserCommandPublisher(channel)  # Manual instantiation with channel
 
     try:
+        # Validate the command data (FastAPI does this automatically based on type hint)
         command = CreateUserCommand(**command_data.model_dump())
+
+        # Publish the command
         await publisher.publish_create_user_command(command)
+
+        # Return a confirmation or a representation of the accepted command
+        # We cannot return the UserDTO yet as creation is async.
+        # Return a 202 Accepted or a specific response indicating async processing.
+        # For now, returning a simple message, adjust as needed.
         return JSONResponse(
             status_code=status.HTTP_202_ACCEPTED,
             content={
@@ -41,14 +59,44 @@ async def register_user_command(
                 "email": command.email,
             },
         )
+
     except DomainError as e:
+        # This specific error shouldn't happen here if publishing, but handle just in case
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except Exception as e:
+        # Log the exception
         print(f"Error publishing create user command: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to publish user create command.",
+            detail="Failed to publish user creation command.",
         )
+
+
+# --- Direct Command Handling Endpoint (Alternative/Example) ---
+# Use this if you want synchronous user creation via the API for some reason
+# @router.post(
+#     "/sync",
+#     response_model=UserDTO,
+#     status_code=status.HTTP_201_CREATED,
+#     summary="Register a new user (synchronously)",
+#     description="Handles user registration directly without message queue.",
+# )
+# async def create_user_sync(
+#     handler: CreateUserHandler, # Inject the command handler
+#     command: CreateUserCommand = Body(...)
+# ):
+#     try:
+#         created_user = await handler.handle(command)
+#         return UserDTO.model_validate(created_user)
+#     except DomainError as e: # Catch specific domain errors like duplicate email
+#         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+#     except Exception as e:
+#         # Log the exception e
+#         print(f"Error creating user synchronously: {e}")
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred during user creation.")
+
+
+# --- Query Endpoints ---
 
 
 @router.get(
@@ -60,8 +108,11 @@ async def register_user_command(
 )
 async def get_user(
     user_id: uuid.UUID,
-    handler: GetUserByIdHandler,
+    handler: GetUserByIdHandler,  # Inject the query handler
 ):
+    """
+    Retrieves user details by their unique ID.
+    """
     query = GetUserByIdQuery(user_id=user_id)
     try:
         user_dto = await handler.handle(query)
@@ -70,10 +121,11 @@ async def get_user(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return user_dto
-    except EntityNotFoundError as e:
+    except EntityNotFoundError as e:  # Catch specific errors if handler raises them
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         print(f"Error getting user by ID {user_id}: {e}")
+        # Log the exception
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving the user.",
@@ -87,15 +139,24 @@ async def get_user(
     summary="List users",
 )
 async def list_users(
-    handler: ListUsersHandler,
+    handler: ListUsersHandler,  # Inject the query handler
+    # Use FastAPI's Depends for query parameters to automatically map to ListUsersQuery
     query_params: ListUsersQuery = Depends(),
 ):
+    """
+    Retrieves a list of users, potentially with filtering and pagination.
+    """
     try:
+        # FastAPI automatically creates ListUsersQuery from query params due to Depends()
         user_dtos = await handler.handle(query_params)
         return user_dtos
     except Exception as e:
         print(f"Error listing users: {e}")
+        # Log the exception
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while listing users.",
         )
+
+
+# Add other endpoints for update, delete (likely command-based via MQ or direct handlers)

@@ -1,14 +1,15 @@
 import uuid
 
 from sqlalchemy import Boolean, Column, String, Uuid
+from sqlalchemy.orm import relationship  # If relations are needed
 
 from core.database import Base
 
 
 class UserModel(Base):
     """
-    SQLAlchemy model for the User entity.
-    This model is used to interact with the database.
+    SQLAlchemy ORM Model representing the 'users' table.
+    This maps to the database schema.
     """
 
     __tablename__ = "users"
@@ -19,5 +20,8 @@ class UserModel(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
+    # Add relationships here if needed, e.g.:
+    # posts = relationship("PostModel", back_populates="author")
+
     def __repr__(self):
-        return f"<UserModel(id={self.id}, name={self.name}, email={self.email}, is_active={self.is_active})>"
+        return f"<UserModel(id={self.id}, email='{self.email}', name='{self.name}')>"
