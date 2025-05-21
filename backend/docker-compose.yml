@@ -1,0 +1,99 @@
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: contextflow_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-contextflow_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - app_network
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user} -d ${DB_NAME:-contextflow_db}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: contextflow_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672" # AMQP port
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672" # Management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+    networks:
+      - app_network
+    healthcheck:
+        test: ["CMD", "rabbitmq-diagnostics", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: contextflow_app
+    env_file:
+      - .env
+    environment:
+      # Override env file for service names if needed, e.g., when running in docker
+      DATABASE_URL: "postgresql+asyncpg://${DB_USER:-user}:${DB_PASSWORD:-password}@db:${DB_PORT:-5432}/${DB_NAME:-contextflow_db}"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:${RABBITMQ_PORT:-5672}/"
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - .:/app # Mount current directory to /app for development (reflects code changes)
+    networks:
+      - app_network
+    # Add command to run consumers if needed, or run them as separate services
+    # command: ["sh", "-c", "poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 & poetry run python -m path.to.consumer"]
+
+    user_consumer:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: contextflow_user_consumer
+      env_file:
+        - .env
+      environment:
+        DATABASE_URL: "postgresql+asyncpg://${DB_USER:-user}:${DB_PASSWORD:-password}@db:${DB_PORT:-5432}/${DB_NAME:-contextflow_db}"
+        RABBITMQ_URL: "amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:${RABBITMQ_PORT:-5672}/"
+      depends_on:
+        rabbitmq:
+          condition: service_healthy
+        db:
+          condition: service_healthy
+      volumes:
+        - .:/app
+      networks:
+        - app_network
+      command: ["poetry", "run", "python", "-m", "contexts.users.interfaces.consumers.user_consumer"]
+      restart: on-failure
+
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+
