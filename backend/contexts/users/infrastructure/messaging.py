@@ -4,7 +4,9 @@ from aio_pika.abc import AbstractRobustChannel
 
 from contexts.users.application.commands import CreateUserCommand
 from core.messaging import (  # Assuming setup is managed elsewhere or called here
-    publish_message, setup_messaging_infrastructure)
+    publish_message,
+    setup_messaging_infrastructure,
+)
 
 # Configuration (could be moved to a central config or context-specific config)
 USER_COMMAND_EXCHANGE = "user_commands_exchange"

@@ -3,10 +3,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from contexts.users.application.queries import (GetUserByIdQuery,
-                                                ListUsersQuery, UserDTO)
+from contexts.users.application.queries import GetUserByIdQuery, ListUsersQuery, UserDTO
 from contexts.users.application.queries_handlers import (
-    GetUserByIdQueryHandler, ListUsersQueryHandler)
+    GetUserByIdQueryHandler,
+    ListUsersQueryHandler,
+)
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository
 from core.errors import EntityNotFoundError  # Import if handler raises this

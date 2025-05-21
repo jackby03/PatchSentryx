@@ -4,7 +4,9 @@ from unittest.mock import AsyncMock
 import pytest
 
 from contexts.auth.application.authenticate_user import (
-    AuthenticateUserRequest, AuthenticateUserUseCase)
+    AuthenticateUserRequest,
+    AuthenticateUserUseCase,
+)
 from contexts.auth.domain.entities import Token
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository

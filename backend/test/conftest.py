@@ -5,8 +5,12 @@ from typing import AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
-                                    async_sessionmaker, create_async_engine)
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 # Ensure ASYNCIO_MODE is set, or pytest-asyncio handles it automatically >= 0.17
 # pytestmark = pytest.mark.asyncio
@@ -26,6 +30,7 @@ print(f"RabbitMQ URL: {os.environ['RABBITMQ_URL']}")
 
 # Import models from all contexts needed for table creation
 from contexts.users.infrastructure.models import UserModel
+
 # --- Database Fixtures ---
 # Import Base from your core models or context models
 # Ensure all models are imported somewhere before Base.metadata is used

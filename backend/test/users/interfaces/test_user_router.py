@@ -1,12 +1,12 @@
 import uuid
-from unittest.mock import \
-    ANY  # For asserting mock calls with generated IDs etc.
+from unittest.mock import ANY  # For asserting mock calls with generated IDs etc.
 
 import pytest
 from httpx import AsyncClient
 
-from contexts.users.application.commands import \
-    CreateUserCommand  # For payload structure
+from contexts.users.application.commands import (
+    CreateUserCommand,
+)  # For payload structure
 from contexts.users.domain.entities import User  # For checking repo calls
 from core.security import get_password_hash  # For creating test users directly
 

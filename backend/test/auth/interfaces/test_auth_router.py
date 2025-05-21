@@ -29,8 +29,9 @@ async def test_user_in_db(db_session) -> User:
 
     # Map to model and add
     from contexts.users.infrastructure.models import UserModel
-    from contexts.users.infrastructure.repositories import \
-        _map_entity_to_model  # Assuming mapper exists
+    from contexts.users.infrastructure.repositories import (
+        _map_entity_to_model,
+    )  # Assuming mapper exists
 
     user_model = _map_entity_to_model(user)
     db_session.add(user_model)
@@ -62,8 +63,7 @@ def inactive_user_login_form_data(db_session) -> Dict[str, str]:
             is_active=False,  # Inactive user
         )
         from contexts.users.infrastructure.models import UserModel
-        from contexts.users.infrastructure.repositories import \
-            _map_entity_to_model
+        from contexts.users.infrastructure.repositories import _map_entity_to_model
 
         user_model = _map_entity_to_model(user)
         db_session.add(user_model)

@@ -6,14 +6,18 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from starlette.responses import JSONResponse
 
 from contexts.users.application.commands import CreateUserCommand
-from contexts.users.application.queries import (GetUserByIdQuery,
-                                                ListUsersQuery, UserDTO)
-from contexts.users.infrastructure.messaging import \
-    UserCommandPublisher  # Import publisher logic
+from contexts.users.application.queries import GetUserByIdQuery, ListUsersQuery, UserDTO
+from contexts.users.infrastructure.messaging import (
+    UserCommandPublisher,
+)  # Import publisher logic
 from contexts.users.interfaces.dependencies import (  # Use handler dependencies directly now; UserCmdPublisher, # Dependency for direct publishing if needed
-    CreateUserHandler, GetUserByIdHandler, ListUsersHandler)
-from core.dependencies import \
-    MqChannel  # Import channel dependency for direct publishing
+    CreateUserHandler,
+    GetUserByIdHandler,
+    ListUsersHandler,
+)
+from core.dependencies import (
+    MqChannel,
+)  # Import channel dependency for direct publishing
 from core.errors import DomainError, EntityNotFoundError
 
 router = APIRouter()

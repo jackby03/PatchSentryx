@@ -3,8 +3,7 @@ from typing import AsyncGenerator, Optional, TypeAlias
 
 import aio_pika
 from aio_pika.abc import AbstractRobustChannel, AbstractRobustConnection
-from tenacity import (retry, retry_if_exception_type, stop_after_attempt,
-                      wait_fixed)
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 from app.config import settings
 from core.errors import MessagingError

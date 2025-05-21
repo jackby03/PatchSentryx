@@ -1,9 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from contexts.users.application.command_handlers import \
-    CreateUserCommandHandler
+from contexts.users.application.command_handlers import CreateUserCommandHandler
 from contexts.users.application.queries_handlers import (
-    GetUserByIdQueryHandler, ListUsersQueryHandler)
+    GetUserByIdQueryHandler,
+    ListUsersQueryHandler,
+)
+
 # from core.messaging import get_rabbitmq_connection # If getting connection centrally
 from contexts.users.domain.repositories import UserRepository
 from contexts.users.infrastructure.repositories import SQLAlchemyUserRepository

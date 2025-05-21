@@ -8,8 +8,9 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from contexts.auth.interfaces import auth_router
 from contexts.users.interfaces import user_router
-from contexts.users.interfaces.consumers.user_consumer import \
-    consume_create_user_commands
+from contexts.users.interfaces.consumers.user_consumer import (
+    consume_create_user_commands,
+)
 from core.database import Base, close_db, engine, init_db
 from core.messaging import close_rabbitmq_connection
 

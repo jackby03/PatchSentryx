@@ -2,10 +2,13 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from contexts.users.application.command_handlers import \
-    CreateUserCommandHandler  # Import other handlers
+from contexts.users.application.command_handlers import (
+    CreateUserCommandHandler,
+)  # Import other handlers
 from contexts.users.application.queries_handlers import (
-    GetUserByIdQueryHandler, ListUsersQueryHandler)
+    GetUserByIdQueryHandler,
+    ListUsersQueryHandler,
+)
 from contexts.users.domain.repositories import UserRepository
 from contexts.users.infrastructure.repositories import SQLAlchemyUserRepository
 from core.dependencies import DbSession  # Use the shared DbSession type hint

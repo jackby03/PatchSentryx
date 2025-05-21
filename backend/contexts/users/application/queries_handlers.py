@@ -1,8 +1,7 @@
 import uuid
 from typing import List, Optional
 
-from contexts.users.application.queries import (GetUserByIdQuery,
-                                                ListUsersQuery, UserDTO)
+from contexts.users.application.queries import GetUserByIdQuery, ListUsersQuery, UserDTO
 from contexts.users.domain.repositories import UserRepository
 from core.errors import EntityNotFoundError
 

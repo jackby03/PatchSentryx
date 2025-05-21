@@ -1,5 +1,6 @@
-from contexts.users.application.commands import \
-    CreateUserCommand  # Import other commands as needed
+from contexts.users.application.commands import (
+    CreateUserCommand,
+)  # Import other commands as needed
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository
 from core.errors import DomainError  # Use specific errors if needed

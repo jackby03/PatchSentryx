@@ -4,8 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from contexts.users.application.command_handlers import \
-    CreateUserCommandHandler
+from contexts.users.application.command_handlers import CreateUserCommandHandler
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository

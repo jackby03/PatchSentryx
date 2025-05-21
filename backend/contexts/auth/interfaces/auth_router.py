@@ -4,7 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from contexts.auth.application.authenticate_user import (
-    AuthenticateUserRequest, AuthenticateUserUseCase)
+    AuthenticateUserRequest,
+    AuthenticateUserUseCase,
+)
 from contexts.auth.application.queries import TokenDTO
 from contexts.auth.interfaces.dependencies import ActiveUser, AuthenticateUser
 from contexts.users.application.queries import UserDTO

@@ -6,12 +6,13 @@ from fastapi.security import OAuth2PasswordBearer
 
 from contexts.auth.application.authenticate_user import AuthenticateUserUseCase
 from contexts.auth.domain.entities import TokenData
-from contexts.users.domain.entities import \
-    User  # Depends on Users context entity
-from contexts.users.domain.repositories import \
-    UserRepository  # Depends on Users context repo
-from contexts.users.interfaces.dependencies import \
-    get_user_repository  # Reuse user repo provider
+from contexts.users.domain.entities import User  # Depends on Users context entity
+from contexts.users.domain.repositories import (
+    UserRepository,
+)  # Depends on Users context repo
+from contexts.users.interfaces.dependencies import (
+    get_user_repository,
+)  # Reuse user repo provider
 from core.errors import AuthorizationError, EntityNotFoundError
 from core.security import decode_access_token
 

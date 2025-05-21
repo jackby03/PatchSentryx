@@ -4,8 +4,9 @@ from pydantic import BaseModel, EmailStr
 
 from contexts.auth.domain.entities import Token
 from contexts.users.domain.entities import User
-from contexts.users.domain.repositories import \
-    UserRepository  # Depends on Users context repository
+from contexts.users.domain.repositories import (
+    UserRepository,
+)  # Depends on Users context repository
 from core.errors import AuthorizationError, EntityNotFoundError
 from core.security import create_access_token, verify_password
 
