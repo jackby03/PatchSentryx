@@ -18,7 +18,9 @@ class ItemModel(Base):
     serial_number = Column(String(100), nullable=False)
     location = Column(String(100), nullable=False)
     collection_id = Column(
-        Uuid(as_uuid=True), ForeignKey("collections.id", ondelete="CASCADE"), nullable=False
+        Uuid(as_uuid=True),
+        ForeignKey("collections.id", ondelete="CASCADE"),
+        nullable=False,
     )  # Added ondelete="CASCADE" for better referential integrity
     is_active = Column(Boolean, default=True)
 

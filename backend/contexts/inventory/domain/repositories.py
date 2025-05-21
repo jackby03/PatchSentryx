@@ -123,11 +123,15 @@ class InventoryRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def update_collection(self, collection_id: uuid.UUID, name: str, description: str) -> None:
+    async def update_collection(
+        self, collection_id: uuid.UUID, name: str, description: str
+    ) -> None:
         """Updates the details of a collection."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def delete_collection(self, collection_id: uuid.UUID, delete_items: bool = True) -> None:
+    async def delete_collection(
+        self, collection_id: uuid.UUID, delete_items: bool = True
+    ) -> None:
         """Deletes a collection and optionally its associated items."""
         raise NotImplementedError
