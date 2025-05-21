@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from contexts.users.domain.entities import User
+from core.errors import InvalidStateError
 from core.security import verify_password  # To check password hashing
 
 
@@ -101,7 +102,8 @@ def test_activate_already_active_user():
     user = User(
         name="Test", email="test@example.com", hashed_password="hash", is_active=True
     )
-    user.activate()  # Should not raise error by default
+    with pytest.raises(InvalidStateError):
+        user.activate()
     assert user.is_active is True
 
 
@@ -119,5 +121,6 @@ def test_deactivate_already_inactive_user():
     user = User(
         name="Test", email="test@example.com", hashed_password="hash", is_active=False
     )
-    user.deactivate()  # Should not raise error by default
+    with pytest.raises(InvalidStateError):
+        user.deactivate()
     assert user.is_active is False
