@@ -3,22 +3,20 @@ import json
 import os
 import sys
 
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
-)
-sys.path.insert(0, project_root)
-
-
 from aio_pika.abc import AbstractIncomingMessage
 
-from contexts.users.application.command_handlers import \
-    CreateUserCommandHandler
+from contexts.users.application.command_handlers import CreateUserCommandHandler
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.infrastructure.repositories import SQLAlchemyUserRepository
 from core.database import AsyncSessionFactory, close_db
 from core.errors import DomainError
-from core.messaging import (get_rabbitmq_connection,
-                            setup_messaging_infrastructure)
+from core.messaging import get_rabbitmq_connection, setup_messaging_infrastructure
+
+# Add the project root to sys.path
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
+)
+sys.path.insert(0, project_root)
 
 # Configuration
 USER_COMMAND_EXCHANGE = "user_commands_exchange"
