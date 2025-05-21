@@ -18,11 +18,15 @@ class ItemModel(Base):
     serial_number = Column(String(100), nullable=False)
     location = Column(String(100), nullable=False)
     collection_id = Column(
-        Uuid(as_uuid=True), ForeignKey("collections.id"), nullable=False
-    )
+        Uuid(as_uuid=True), ForeignKey("collections.id", ondelete="CASCADE"), nullable=False
+    )  # Added ondelete="CASCADE" for better referential integrity
     is_active = Column(Boolean, default=True)
 
-    collection = relationship("CollectionModel", back_populates="items")
+    collection = relationship(
+        "CollectionModel",
+        back_populates="items",
+        lazy="joined",  # Use "joined" loading for better performance
+    )
 
     def __repr__(self):
         return f"<InventoryItemModel(id={self.id}, name='{self.name}', hostname='{self.hostname}')>"
@@ -36,7 +40,12 @@ class CollectionModel(Base):
     description = Column(String(500), nullable=False)
     is_active = Column(Boolean, default=True)
 
-    items = relationship("ItemModel", back_populates="collection")
+    items = relationship(
+        "ItemModel",
+        back_populates="collection",
+        cascade="all, delete-orphan",  # Automatically handle related items
+        lazy="selectin",  # Use "selectin" loading for better performance
+    )
 
     def __repr__(self):
         return f"<CollectionModel(id={self.id}, name='{self.name}')>"

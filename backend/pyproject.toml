@@ -1,4 +1,5 @@
 [tool.poetry]
+# Project metadata
 name = "Backend"
 version = "0.1.0"
 description = "Backend project demonstrating Hexagonal Architecture, CQRS, and Bundle-Contexts with FastAPI."
@@ -11,6 +12,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
+# Application dependencies
 python = "^3.10"
 fastapi = "^0.113.0"
 uvicorn = { extras = ["standard"], version = "^0.30.3" }
@@ -24,8 +26,8 @@ aio-pika = "^9.4.1" # Async RabbitMQ client
 tenacity = "^8.5.0" # For retries (e.g., connecting to RabbitMQ/DB)
 python-multipart = "^0.0.9" # Required by FastAPI for form data
 
-
 [tool.poetry.group.dev.dependencies]
+# Development dependencies
 pytest = "^8.3.2"
 pytest-asyncio = "^0.24.0"
 pytest-cov = "^5.0.0"
@@ -38,18 +40,20 @@ ruff = "^0.6.4"
 pre-commit = "^3.8.0"
 alembic = "^1.13.2" # If using Alembic for migrations
 
-
 [build-system]
+# Build system configuration
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
+# Pytest configuration
 asyncio_mode = "auto"
 pythonpath = [".", "src"] # Add src if you structure code under src/
 testpaths = ["tests"]
 # Add markers if needed: e.g., @pytest.mark.integration
 
 [tool.coverage.run]
+# Coverage configuration
 source = ["contextflow"] # Adjust if your main code is under src/
 omit = [
     "contextflow/app/main.py", # Example: Exclude main entry point if trivial
@@ -61,10 +65,12 @@ omit = [
 ]
 
 [tool.coverage.report]
+# Coverage report settings
 fail_under = 80 # Enforce minimum coverage
 show_missing = true
 
 [tool.mypy]
+# MyPy type-checking configuration
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
@@ -74,20 +80,25 @@ check_untyped_defs = true
 exclude = ['venv', 'build', 'dist', 'tests/factories'] # Exclude factories if they cause type issues
 
 [tool.ruff]
+# Ruff linter configuration
 line-length = 88
 
 [tool.ruff.format]
+# Formatting rules
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
 [tool.ruff.lint]
+# Linting rules
 select = ["E", "W", "F", "I", "C", "B"] # Select standard linter rules + isort + flake8-bugbear
 ignore = ["E501"] # Ignore line length handled by formatter (or remove if line-length = 88 is desired)
 
 [tool.ruff.lint.isort]
+# Import sorting rules
 known-first-party = ["app", "core", "contexts"]
 
 [tool.poetry.scripts]
+# Custom scripts
 dev = "uvicorn:main"

@@ -1,10 +1,13 @@
+# Standard library imports
 import asyncio
 import json
 import os
 import sys
 
+# Third-party imports
 from aio_pika.abc import AbstractIncomingMessage
 
+# Application imports
 from contexts.users.application.command_handlers import CreateUserCommandHandler
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.infrastructure.repositories import SQLAlchemyUserRepository
@@ -18,7 +21,7 @@ project_root = os.path.abspath(
 )
 sys.path.insert(0, project_root)
 
-# Configuration
+# Configuration constants
 USER_COMMAND_EXCHANGE = "user_commands_exchange"
 CREATE_USER_QUEUE = "create_user_queue"
 CREATE_USER_ROUTING_KEY = "user.command.create"
