@@ -1,7 +1,6 @@
 import uuid
 
-from pydantic import BaseModel, EmailStr, Field
-from pydantic.v1 import validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from core.errors import InvalidStateError
 from core.security import get_password_hash, verify_password
@@ -19,10 +18,9 @@ class User(BaseModel):
     is_active: bool = True
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
-    @validator("name")
+    @field_validator("name")
     def name_must_not_be_empty(cls, v):
         if not v.strip():
             raise ValueError("Name must not be empty.")

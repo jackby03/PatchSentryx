@@ -29,11 +29,13 @@ async def get_rabbitmq_connection() -> AbstractRobustConnection:
 @retry(
     stop=stop_after_attempt(5),
     wait=wait_fixed(2),
-    retry=retry_if_exception_type((
-        ConnectionError,
-        asyncio.TimeoutError,
-        aio_pika.exceptions.AMQPConnectionError,
-    )),
+    retry=retry_if_exception_type(
+        (
+            ConnectionError,
+            asyncio.TimeoutError,
+            aio_pika.exceptions.AMQPConnectionError,
+        )
+    ),
     reraise=True,  # Reraise the exception if all retries fail
 )
 async def connect_to_rabbitmq() -> AbstractRobustConnection:
@@ -163,7 +165,6 @@ async def publish_message(
     print("Message published successfully.")
 
 
-# Example of setting up exchanges/queues (call this during startup or consumer setup)
 async def setup_messaging_infrastructure(channel: Channel):
     """Sets up necessary exchanges and queues. Should be idempotent."""
     # Example for User Commands

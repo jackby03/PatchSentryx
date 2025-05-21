@@ -1,13 +1,9 @@
 import uuid
-from typing import List
 
 from pydantic import BaseModel, EmailStr, Field
 
+
 # --- Query DTOs ---
-# These represent the data structure returned by queries.
-# They might differ from domain entities (e.g., omitting sensitive fields like password).
-
-
 class UserDTO(BaseModel):
     """Data Transfer Object for User information."""
 
@@ -17,7 +13,7 @@ class UserDTO(BaseModel):
     is_active: bool
 
     class Config:
-        from_attributes = True  # Enable creating DTO from ORM/domain objects
+        from_attributes = True
 
 
 # --- Query Models (Optional, if you need specific query parameters) ---

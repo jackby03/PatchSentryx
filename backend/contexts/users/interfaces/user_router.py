@@ -42,16 +42,10 @@ async def register_user_command(
     publisher = UserCommandPublisher(channel)  # Manual instantiation with channel
 
     try:
-        # Validate the command data (FastAPI does this automatically based on type hint)
         command = CreateUserCommand(**command_data.model_dump())
 
-        # Publish the command
         await publisher.publish_create_user_command(command)
 
-        # Return a confirmation or a representation of the accepted command
-        # We cannot return the UserDTO yet as creation is async.
-        # Return a 202 Accepted or a specific response indicating async processing.
-        # For now, returning a simple message, adjust as needed.
         return JSONResponse(
             status_code=status.HTTP_202_ACCEPTED,
             content={

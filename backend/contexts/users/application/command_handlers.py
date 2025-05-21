@@ -20,30 +20,22 @@ class CreateUserCommandHandler:
         """
         print(f"Handling CreateUserCommand for email: {command.email}")
 
-        # 1. Check for existing user (Business Rule)
         existing_user = await self.user_repository.get_by_email(command.email)
         if existing_user:
-            raise DomainError(
-                f"User with email '{command.email}' already exists."
-            )  # Or a more specific DuplicateEmailError
-
-        # 2. Create User entity
+            print(f"User {command.email} already exists.")
+            raise DomainError(f"User with email '{command.email}' already exists.")
+        print(f"Creating user entity for email: {command.email}")
         user = User(
             name=command.name,
             email=command.email,
-            # Password hashing is handled within the entity's method
-            hashed_password="",  # Temporary value, will be set below
+            hashed_password="",
         )
-        user.set_password(command.password)  # Set password encapsulates hashing logic
-
-        # 3. Persist User
+        user.set_password(command.password)
+        print(f"User entity created: {user}")
         await self.user_repository.add(user)
         print(f"User created successfully with ID: {user.id}")
 
-        # 4. Optionally publish domain event (e.g., UserCreated)
-        # await event_publisher.publish(UserCreatedEvent(user_id=user.id, email=user.email))
-
-        return user  # Return the created user entity (or just ID, or None)
+        return user
 
 
 # --- Add other command handlers here ---

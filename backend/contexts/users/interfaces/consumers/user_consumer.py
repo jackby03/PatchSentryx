@@ -2,9 +2,7 @@ import asyncio
 import json
 import os
 import sys
-from typing import Optional
 
-# Add project root to path to allow imports when run directly
 project_root = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
 )
@@ -17,10 +15,8 @@ from contexts.users.application.command_handlers import \
     CreateUserCommandHandler
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.infrastructure.repositories import SQLAlchemyUserRepository
-from core.database import (  # Import session factory and closer
-    AsyncSessionFactory, close_db)
+from core.database import AsyncSessionFactory, close_db
 from core.errors import DomainError
-from core.messaging import close_rabbitmq_connection  # Import MQ utils
 from core.messaging import (get_rabbitmq_connection,
                             setup_messaging_infrastructure)
 
@@ -32,18 +28,12 @@ CREATE_USER_ROUTING_KEY = "user.command.create"
 
 async def process_create_user_message(message: AbstractIncomingMessage):
     """Processes a message from the create_user_queue."""
-    async with message.process(
-        ignore_processed=True
-    ):  # Use ignore_processed for potential redelivery on failure before ack
+    async with message.process(ignore_processed=True):
         print(f"Received message: {message.body.decode()}")
-
         try:
-            # Decode message body
             data = json.loads(message.body.decode())
             command = CreateUserCommand(**data)
 
-            # Get dependencies (Database Session, Repository, Handler)
-            # We need a new DB session for each message
             async with AsyncSessionFactory() as session:
                 try:
                     repo = SQLAlchemyUserRepository(session)
@@ -51,45 +41,31 @@ async def process_create_user_message(message: AbstractIncomingMessage):
 
                     print(f"Consumer: Handling create user command for {command.email}")
                     await handler.handle(command)
-                    await session.commit()  # Commit the transaction for this message
+                    await session.commit()  # Commit the transaction
                     print(
                         f"Consumer: Successfully processed create user command for {command.email}"
                     )
-                    await (
-                        message.ack()
-                    )  # Acknowledge message only after successful processing and commit
+                    await message.ack()  # Acknowledge the message
                     print("Consumer: Message acknowledged.")
 
                 except DomainError as e:
-                    # Handle specific domain errors (e.g., duplicate email)
                     print(
                         f"Consumer: Domain error processing message for {command.email}: {e}. Rejecting message."
                     )
-                    # Reject message (and don't requeue, as it's a permanent domain error)
+                    await session.rollback()
                     await message.reject(requeue=False)
                 except Exception as e:
-                    # Handle unexpected errors during processing
-                    print(
-                        f"Consumer: Unexpected error processing message: {e}. Rolling back and nacking."
-                    )
+                    print(f"Consumer: Error during processing: {e}")
                     await session.rollback()
-                    # Negative acknowledge, potentially requeue depending on error type
-                    # Be careful with requeueing to avoid infinite loops for persistent errors
-                    await message.nack(
-                        requeue=False
-                    )  # Consider requeue=True for transient errors
-                    raise  # Re-raise to log or handle upstream if needed
-
+                    await message.nack(requeue=False)
+                    raise
         except json.JSONDecodeError:
             print("Consumer: Failed to decode JSON message body. Rejecting.")
-            await message.reject(requeue=False)  # Invalid message, don't requeue
+            await message.reject(requeue=False)
         except Exception as e:
-            # Handle errors during initial message parsing or connection issues
-            print(f"Consumer: Error before processing started: {e}. Nacking.")
-            await message.nack(
-                requeue=False
-            )  # Don't requeue if message structure is bad
-            raise  # Re-raise to potentially stop the consumer
+            print(f"Consumer: Unexpected error before processing: {e}. Nacking.")
+            await message.nack(requeue=False)
+            raise
 
 
 async def consume_create_user_commands():
@@ -97,21 +73,25 @@ async def consume_create_user_commands():
     connection = None
     channel = None
     try:
+        print("[DEBUG] Connecting to RabbitMQ...")
         connection = await get_rabbitmq_connection()
+        print("[DEBUG] RabbitMQ connection established.")
         channel = await connection.channel()
-        await channel.set_qos(prefetch_count=1)  # Process one message at a time
+        await channel.set_qos(prefetch_count=1)
+        print("[DEBUG] Channel created and QoS set.")
 
-        # Ensure queue and bindings exist (idempotent)
+        print("[DEBUG] Setting up messaging infrastructure...")
         await setup_messaging_infrastructure(channel)
+        print("[DEBUG] Messaging infrastructure setup complete.")
 
         queue = await channel.get_queue(CREATE_USER_QUEUE)
+        print(f"[DEBUG] Queue '{CREATE_USER_QUEUE}' acquired.")
         print(f"Consumer: Starting consumption from queue '{CREATE_USER_QUEUE}'...")
 
-        # Start consuming
         await queue.consume(process_create_user_message)
 
         print("Consumer: Waiting for messages. To exit press CTRL+C")
-        # Keep the consumer running indefinitely
+        # Changed to handle cancellation more cleanly
         await asyncio.Event().wait()
 
     except asyncio.CancelledError:
@@ -122,17 +102,16 @@ async def consume_create_user_commands():
         print("Consumer: Shutting down...")
         if channel and not channel.is_closed:
             await channel.close()
-        # Don't close the global connection here if other parts of the app use it
-        # await close_rabbitmq_connection()
-        await close_db()  # Close database pool
+            print("[DEBUG] RabbitMQ channel closed.")
+        if connection and not connection.is_closed:
+            await connection.close()  # Properly close the global connection
+            print("[DEBUG] RabbitMQ connection closed.")
+        await close_db()  # Ensure database pool is closed
         print("Consumer: Shutdown complete.")
 
 
 # Entry point for running the consumer directly
 if __name__ == "__main__":
-    # Note: Running this directly requires DATABASE_URL and RABBITMQ_URL
-    # to be set in the environment or via a .env file loaded by config.py
-    # You might need to initialize settings explicitly if not running via FastAPI startup
     from app.config import settings
 
     print(

@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,23 +8,21 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from contexts.auth.interfaces import auth_router
 from contexts.users.interfaces import user_router
+from contexts.users.interfaces.consumers.user_consumer import \
+    consume_create_user_commands
 from core.database import Base, close_db, engine, init_db
 from core.messaging import close_rabbitmq_connection
-
-# Import other context routers here
 
 # Initialize FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
     description="Backend project demonstrating Hexagonal Architecture, CQRS, and Bundle-Contexts.",
     version="0.1.0",
-    # Configure docs URLs based on environment if needed
-    # docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
-    # redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
+    docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
+    redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
 )
 
 # --- Middleware ---
-# Add CORS middleware if needed (adjust origins based on requirements)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Or specify allowed origins: ["http://localhost:3000"]
@@ -36,9 +36,9 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     print("Starting up ContextFlow application...")
-    await init_db()  # Initialize database connection and potentially create tables
+    await init_db()
     # Initialize RabbitMQ connection pool (if using a shared pool)
-    # await init_rabbitmq() # Example placeholder
+    # await init_rabbitmq()
     print("Application startup complete.")
 
 
@@ -69,10 +69,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 #     )
 
 # --- Routers ---
-# Include routers from different contexts
 app.include_router(user_router.router, prefix="/users", tags=["Users"])
 app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
-# app.include_router(other_context_router.router, prefix="/other", tags=["Other Context"])
 
 
 # --- Root Endpoint ---
@@ -87,14 +85,16 @@ async def read_root():
 
 
 # --- Optional: Function to create tables (useful for testing/dev) ---
-# async def create_tables():
-#     async with engine.begin() as conn:
-#         await conn.run_sync(Base.metadata.create_all)
-#     print("Database tables created (if they didn't exist).")
+async def create_tables():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print("Database tables created (if they didn't exist).")
 
-# if __name__ == "__main__":
-#     # Example of how to run create_tables before starting uvicorn for local dev
-#     import asyncio
-#     asyncio.run(create_tables())
-#     # Then run uvicorn command manually:
-#     # uvicorn app.main:app --reload
+
+if __name__ == "__main__":
+    # Example of how to run create_tables before starting uvicorn for local dev
+    import asyncio
+
+    asyncio.run(create_tables())
+    # Then run uvicorn command manually:
+    # uvicorn app.main:app --reload
