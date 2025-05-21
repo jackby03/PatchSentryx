@@ -1,62 +1,73 @@
-from typing import Any, Type, TypeVar
+import uuid
+from typing import Any, Optional, Type, TypeVar
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from contexts.inventory.domain.entities import Collection, Item
-from contexts.inventory.infrastructure.models import CollectionModel, ItemModel
+from contexts.inventory.domain.repositories import InventoryRepository
+from contexts.inventory.infrastructure.commands import InventoryCommands
+from contexts.inventory.infrastructure.queries import InventoryQueries
 
 T = TypeVar("T", Item, Collection)
 
 
-def _map_model_to_entity(model: Any, entity_class: Type[T]) -> T:
-    """Maps SQLAlchemy model to domain entity"""
-    if not model:
-        return None
+class SQLAlchemyInventoryRepository(InventoryRepository):
+    def __init__(self, session: AsyncSession):
+        self.commands = InventoryCommands(session)
+        self.queries = InventoryQueries(session)
 
-    if entity_class == Item:
-        return Item(
-            id=model.id,
-            name=model.name,
-            hostname=model.hostname,
-            version=model.version,
-            brand=model.brand,
-            model=model.model,
-            serial_number=model.serial_number,
-            location=model.location,
-            collection_id=model.collection_id,
-            is_active=model.is_active,
-        )
-    elif entity_class == Collection:
-        return Collection(
-            id=model.id,
-            name=model.name,
-            description=model.description,
-            is_active=model.is_active,
-            items=[_map_model_to_entity(item, Item) for item in model.items],
-        )
+    # Delegate commands
+    async def add_item(self, item: Item) -> None:
+        await self.commands.add_item(item)
 
-    raise ValueError(f"Unsupported entity type: {entity_class}")
+    async def update(self, item: Item) -> None:
+        await self.commands.update_item(item)
 
+    async def delete(self, item_id: uuid.UUID) -> None:
+        await self.commands.delete_item(item_id)
 
-def _map_entity_to_model(entity: T) -> Any:
-    """Maps domain entity to SQLAlchemy model"""
-    if existing_model := entity.__dict__.get("model"):
-        # Update existing model instance
-        for key, value in entity.__dict__.items():
-            if key != "model" and hasattr(existing_model, key):
-                setattr(existing_model, key, value)
-        return existing_model
-    else:
-        # Create new model instance
-        if isinstance(entity, Item):
-            model_class = ItemModel
-        elif isinstance(entity, Collection):
-            model_class = CollectionModel
-        else:
-            raise ValueError(f"Unsupported entity type: {type(entity)}")
+    async def update_item_status(self, item_id: uuid.UUID, is_active: bool) -> None:
+        await self.commands.update_item_status(item_id, is_active)
 
-        # Convert entity attributes to dict, excluding any attributes not in the model
-        model_attrs = {
-            k: v
-            for k, v in entity.__dict__.items()
-            if k != "model" and hasattr(model_class, k)
-        }
-        return model_class(**model_attrs)
+    async def move_items_to_collection(
+        self, item_ids: list[uuid.UUID], target_collection_id: uuid.UUID
+    ) -> None:
+        await self.commands.move_items_to_collection(item_ids, target_collection_id)
+
+    async def add_collection(self, name: str, description: str) -> None:
+        await self.commands.add_collection(name, description)
+
+    async def update_collection(
+        self, collection_id: uuid.UUID, name: str, description: str
+    ) -> None:
+        await self.commands.update_collection(collection_id, name, description)
+
+    async def delete_collection(
+        self, collection_id: uuid.UUID, delete_items: bool = True
+    ) -> None:
+        await self.commands.delete_collection(collection_id, delete_items)
+
+    # Delegate queries
+    async def get_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
+        return await self.queries.get_item_by_id(item_id)
+
+    async def list_all(self) -> list[Item]:
+        return await self.queries.list_all_items()
+
+    async def get_by_collection_id(self, collection_id: uuid.UUID) -> list[Item]:
+        return await self.queries.get_items_by_collection_id(collection_id)
+
+    async def search_items(self, query: str) -> list[Item]:
+        return await self.queries.search_items(query)
+
+    async def count_items(self, is_active: Optional[bool] = None) -> int:
+        return await self.queries.count_items(is_active)
+
+    async def list_active_items(self, is_active: bool = True) -> list[Item]:
+        return await self.queries.list_active_items(is_active)
+
+    async def list_collections(self) -> list[Collection]:
+        return await self.queries.list_collections()
+
+    async def list_active_collections(self, is_active: bool = True) -> list[Collection]:
+        return await self.queries.list_active_collections(is_active)

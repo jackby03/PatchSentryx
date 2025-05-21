@@ -21,13 +21,13 @@ class ItemModel(Base):
         Uuid(as_uuid=True),
         ForeignKey("collections.id", ondelete="CASCADE"),
         nullable=False,
-    )  # Added ondelete="CASCADE" for better referential integrity
+    )
     is_active = Column(Boolean, default=True)
 
     collection = relationship(
         "CollectionModel",
         back_populates="items",
-        lazy="joined",  # Use "joined" loading for better performance
+        lazy="joined",
     )
 
     def __repr__(self):
@@ -45,8 +45,8 @@ class CollectionModel(Base):
     items = relationship(
         "ItemModel",
         back_populates="collection",
-        cascade="all, delete-orphan",  # Automatically handle related items
-        lazy="selectin",  # Use "selectin" loading for better performance
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
 
     def __repr__(self):

@@ -4,7 +4,7 @@ import uuid
 from typing import Optional
 
 # Application imports
-from contexts.inventory.domain.entities import Item
+from contexts.inventory.domain.entities import Collection, Item
 
 
 class InventoryRepository(abc.ABC):
@@ -99,6 +99,35 @@ class InventoryRepository(abc.ABC):
     @abc.abstractmethod
     async def update_item_status(self, item_id: uuid.UUID, is_active: bool) -> None:
         """Updates the active status of an inventory item."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def list_active_items(self, is_active: bool = True) -> list[Item]:
+        """Lists all active or inactive items in the inventory."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def move_items_to_collection(
+        self, item_ids: list[uuid.UUID], target_collection_id: uuid.UUID
+    ) -> None:
+        """Moves items to a different collection."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def list_active_collections(self, is_active: bool = True) -> list[Collection]:
+        """Lists all active or inactive collections."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def list_items_by_collections(
+        self, collection_ids: list[uuid.UUID]
+    ) -> list[Item]:
+        """Lists all items belonging to multiple collections."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def delete_items_by_criteria(self, **filters) -> None:
+        """Deletes items based on specific criteria."""
         raise NotImplementedError
 
     # Collection operations

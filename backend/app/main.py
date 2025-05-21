@@ -7,6 +7,8 @@ from fastapi.responses import JSONResponse
 
 from app.config import settings
 from contexts.auth.interfaces import auth_router
+from contexts.inventory.interfaces.collection_router import router as collection_router
+from contexts.inventory.interfaces.item_router import router as item_router
 from contexts.users.interfaces import user_router
 from contexts.users.interfaces.consumers.user_consumer import (
     consume_create_user_commands,
@@ -14,13 +16,14 @@ from contexts.users.interfaces.consumers.user_consumer import (
 from core.database import Base, close_db, engine, init_db
 from core.messaging import close_rabbitmq_connection
 
-# Initialize FastAPI app
+# Initialize FastAPI app with docs always enabled
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend project demonstrating Hexagonal Architecture, CQRS, and Bundle-Contexts.",
+    description="Backend project demonstrating Hexagonal Architecture, CQRS, and Bundle-Contexts with FastAPI.",
     version="0.1.0",
-    docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
-    redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 # --- Middleware ---
@@ -70,8 +73,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 #     )
 
 # --- Routers ---
+# Include user and auth routers
 app.include_router(user_router.router, prefix="/users", tags=["Users"])
 app.include_router(auth_router.router, prefix="/auth", tags=["Authentication"])
+app.include_router(
+    collection_router, prefix="/inventory/collections", tags=["Inventory Collections"]
+)
+app.include_router(item_router, prefix="/inventory/items", tags=["Inventory Items"])
 
 
 # --- Root Endpoint ---
