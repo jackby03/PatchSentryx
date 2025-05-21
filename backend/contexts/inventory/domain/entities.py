@@ -3,10 +3,11 @@ import uuid
 from pydantic import BaseModel, Field, field_validator
 
 
-class InventoryItem(BaseModel):
+class Item(BaseModel):
     """
     Domain Entity representing an Inventory Item.
     """
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str = Field(..., min_length=1, max_length=100)
     hostname: str = Field(..., min_length=1, max_length=100)
@@ -26,16 +27,18 @@ class InventoryItem(BaseModel):
         if not v.strip():
             raise ValueError("Name must not be empty.")
         return v
-    
+
 
 class Collection(BaseModel):
     """
     Domain Entity representing a Collection of Inventory Items.
     """
+
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1, max_length=500)
     is_active: bool = True
+    items: list["Item"] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

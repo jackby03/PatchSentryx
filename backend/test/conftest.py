@@ -5,8 +5,8 @@ from typing import AsyncGenerator, Generator
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine, AsyncEngine)
+from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
+                                    async_sessionmaker, create_async_engine)
 
 # Ensure ASYNCIO_MODE is set, or pytest-asyncio handles it automatically >= 0.17
 # pytestmark = pytest.mark.asyncio
@@ -66,7 +66,6 @@ async def test_engine():
             await engine.dispose()
 
 
-
 @pytest_asyncio.fixture(scope="function")
 async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
     """
@@ -86,7 +85,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
             finally:
                 # Roll back the transaction and close the session
                 await session.close()
-                await transaction.rollback()# Rollback changes after each test
+                await transaction.rollback()  # Rollback changes after each test
                 await connection.close()
 
 
@@ -106,7 +105,7 @@ async def test_client(db_session) -> AsyncGenerator[AsyncClient, None]:
             # No need to close here, fixture handles it
             pass
 
-    app.dependency_overrides[get_db_session] = override_get_db # type: ignore
+    app.dependency_overrides[get_db_session] = override_get_db  # type: ignore
 
     # Add overrides for other external dependencies if needed (e.g., RabbitMQ)
     # async def override_get_rabbitmq_channel(): ...
@@ -116,7 +115,7 @@ async def test_client(db_session) -> AsyncGenerator[AsyncClient, None]:
         yield client
 
     # Cleanup overrides after a test
-    app.dependency_overrides.clear() # type: ignore
+    app.dependency_overrides.clear()  # type: ignore
 
 
 # --- RabbitMQ Fixtures (Optional - more complex setup) ---

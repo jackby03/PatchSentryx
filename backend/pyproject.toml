@@ -32,7 +32,7 @@ pytest-cov = "^5.0.0"
 httpx = "^0.27.0" # Async HTTP client for testing FastAPI endpoints
 factory-boy = "^3.3.0" # For creating test data fixtures
 faker = "^26.1.0" # For generating fake data
-freezegun = "^1.5.2" # For controlling time in tests
+freezegun = "^1.5.1" # For controlling time in tests
 mypy = "^1.11.1"
 ruff = "^0.6.4"
 pre-commit = "^3.8.0"
@@ -75,8 +75,6 @@ exclude = ['venv', 'build', 'dist', 'tests/factories'] # Exclude factories if th
 
 [tool.ruff]
 line-length = 88
-select = ["E", "W", "F", "I", "C", "B"] # Select standard linter rules + isort + flake8-bugbear
-ignore = ["E501"] # Ignore line length handled by formatter (or remove if line-length = 88 is desired)
 
 [tool.ruff.format]
 quote-style = "double"
@@ -84,7 +82,12 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "C", "B"] # Select standard linter rules + isort + flake8-bugbear
+ignore = ["E501"] # Ignore line length handled by formatter (or remove if line-length = 88 is desired)
+
 [tool.ruff.lint.isort]
 known-first-party = ["app", "core", "contexts"]
 
-
+[tool.poetry.scripts]
+dev = "uvicorn:main"

@@ -154,9 +154,7 @@ async def test_list_users_success(test_client: AsyncClient, existing_user: User)
     from contexts.users.infrastructure.models import UserModel
     from contexts.users.infrastructure.repositories import _map_entity_to_model
 
-    async with (
-        test_client.app.state.db_session_manager() as session
-    ):  # Get session from app state if needed or use fixture
+    async with test_client.app.state.db_session_manager() as session:  # Get session from app state if needed or use fixture
         session.add(_map_entity_to_model(user2))
         await session.commit()
 
