@@ -1,8 +1,0 @@
-[project]
-name = "frontend"
-version = "0.1.0"
-description = "Frontend for PatchSentryx"
-requires-python = ">=3.12"
-dependencies = [
-    "flet>=0.27.6",
-]
