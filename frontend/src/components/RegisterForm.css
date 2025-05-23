@@ -1,0 +1,141 @@
+.register-wrapper {
+  min-height: 100vh;
+  background-image: url('https://www.bbva.com/wp-content/uploads/2019/11/ciberseguridad-disi-datos-bbva-1024x629.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  justify-content: flex-end; 
+  align-items: center;
+  padding-right: 0;
+}
+
+.register-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.register-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+}
+
+.register-content {
+  background-color: rgba(255, 255, 255, 0.4);
+  padding: 40px;
+  border: 2px solid #ffffff;
+  border-right: none; 
+  border-bottom: none;
+  border-top: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.register-title {
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.register-content.slide-in-right {
+  animation: slideInFromRight 0.5s;
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(60%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.input-group {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.form-input {
+  width: 90%;
+  padding: 12px 0;
+  border: none;
+  color: #ffffff;
+  border-bottom: 1px solid #ffffff;
+  font-size: 14px;
+  background-color: transparent;
+  margin: 0 auto;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.register-submit-button {
+  width: 90%;
+  padding: 12px;
+  background-color: #2796AF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0 auto 20px;
+  display: block;
+  transition: background-color 0.3s;
+}
+
+.register-submit-button:hover {
+  background-color: #1e7a8f;
+}
+
+.login-section {
+  text-align: center;
+}
+
+.login-text {
+  color: #ffffff;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.login-link {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  font-weight: bold;
+  margin: 0 auto;
+  display: block;
+}
+
+.register-content {
+  animation: floatCard 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes floatCard {
+  from {
+    transform: translateY(0px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  to {
+    transform: translateY(-18px);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.22);
+  }
+}
