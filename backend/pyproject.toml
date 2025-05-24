@@ -1,44 +1,47 @@
-[tool.poetry]
-# Project metadata
+[project]
 name = "Backend"
 version = "0.1.0"
 description = "Backend project demonstrating Hexagonal Architecture, CQRS, and Bundle-Contexts with FastAPI."
-authors = ["Andy J. Del Aguila <jackdelaguilavilla03@gmail.com>"]
+authors = [
+    { name = "Andy J. Del Aguila", email = "jackdelaguilavilla03@gmail.com" }
+]
 readme = "README.md"
+requires-python = ">=3.10,<4.0"
+
+dependencies = [
+    "fastapi>=0.113.0,<1.0.0",
+    "uvicorn[standard]>=0.30.3,<1.0.0",
+    "sqlalchemy[asyncio]>=2.0.33,<3.0.0",
+    "asyncpg>=0.29.0,<1.0.0",
+    "pydantic[email]>=2.9.1,<3.0.0",
+    "pydantic-settings>=2.4.2,<3.0.0",
+    "passlib[bcrypt]>=1.7.4,<2.0.0",
+    "python-jose[cryptography]>=3.3.0,<4.0.0",
+    "aio-pika>=9.4.1,<10.0.0",
+    "tenacity>=8.5.0,<9.0.0",
+    "python-multipart>=0.0.9,<1.0.0"
+]
+
+[tool.poetry]
 packages = [
     { include = "app" },
     { include = "core" },
     { include = "contexts" },
 ]
 
-[tool.poetry.dependencies]
-# Application dependencies
-python = "^3.10"
-fastapi = "^0.113.0"
-uvicorn = { extras = ["standard"], version = "^0.30.3" }
-sqlalchemy = { extras = ["asyncio"], version = "^2.0.33" }
-asyncpg = "^0.29.0" # Async PostgreSQL driver
-pydantic = { extras = ["email"], version = "^2.9.1" }
-pydantic-settings = "^2.4.2" # For loading settings from env vars/files
-passlib = { extras = ["bcrypt"], version = "^1.7.4" } # For password hashing
-python-jose = { extras = ["cryptography"], version = "^3.3.0" } # For JWT handling
-aio-pika = "^9.4.1" # Async RabbitMQ client
-tenacity = "^8.5.0" # For retries (e.g., connecting to RabbitMQ/DB)
-python-multipart = "^0.0.9" # Required by FastAPI for form data
-
 [tool.poetry.group.dev.dependencies]
 # Development dependencies
 pytest = "^8.3.2"
 pytest-asyncio = "^0.24.0"
 pytest-cov = "^5.0.0"
-httpx = "^0.27.0" # Async HTTP client for testing FastAPI endpoints
-factory-boy = "^3.3.0" # For creating test data fixtures
-faker = "^26.1.0" # For generating fake data
-freezegun = "^1.5.1" # For controlling time in tests
+httpx = "^0.27.0"
+factory-boy = "^3.3.0"
+faker = "^26.1.0"
+freezegun = "^1.5.1"
 mypy = "^1.11.1"
 ruff = "^0.6.4"
 pre-commit = "^3.8.0"
-alembic = "^1.13.2" # If using Alembic for migrations
+alembic = "^1.13.2"
 
 [build-system]
 # Build system configuration
@@ -99,6 +102,6 @@ ignore = ["E501"] # Ignore line length handled by formatter (or remove if line-l
 # Import sorting rules
 known-first-party = ["app", "core", "contexts"]
 
-[tool.poetry.scripts]
+[poetry.scripts]
 # Custom scripts
 dev = "uvicorn:main"
