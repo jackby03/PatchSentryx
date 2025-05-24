@@ -1,62 +1,63 @@
-from typing import Any, Type, TypeVar
+from typing import Any, Type, TypeVar, Optional, Union
 
 from contexts.inventory.domain.entities import Collection, Item
 from contexts.inventory.infrastructure.models import CollectionModel, ItemModel
 
-T = TypeVar("T", Item, Collection)
+T = TypeVar("T")  # Generic type for the domain entity
+M = TypeVar("M")  # Generic type for the SQLAlchemy model
 
 
-def _map_model_to_entity(model: Any, entity_class: Type[T]) -> T:
-    """Maps SQLAlchemy model to domain entity."""
-    if not model:
-        return None
+def _map_model_to_entity(model: M, entity_class: Type[T]) -> T:
+    """
+    Maps an SQLAlchemy model instance to a domain entity instance.
+    The mapping uses shared attribute names between the model and the entity class.
 
-    if entity_class == Item:
-        return Item(
-            id=model.id,
-            name=model.name,
-            hostname=model.hostname,
-            version=model.version,
-            brand=model.brand,
-            model=model.model,
-            serial_number=model.serial_number,
-            location=model.location,
-            collection_id=model.collection_id,
-            is_active=model.is_active,
-        )
-    elif entity_class == Collection:
-        return Collection(
-            id=model.id,
-            name=model.name,
-            description=model.description,
-            is_active=model.is_active,
-            items=[_map_model_to_entity(item, Item) for item in model.items],
-        )
+    Args:
+        model: The SQLAlchemy model instance to map from.
+        entity_class: The target domain entity class.
 
-    raise ValueError(f"Unsupported entity type: {entity_class}")
+    Returns:
+        An instance of the target domain entity class.
+    """
+    entity_fields = (
+        entity_class.__annotations__
+    )  # Get fields defined in the domain entity
+    mapped_data = {
+        field: getattr(model, field, None)
+        for field in entity_fields
+        if hasattr(model, field)
+    }
+
+    return entity_class(**mapped_data)
 
 
-def _map_entity_to_model(entity: T) -> Any:
-    """Maps domain entity to SQLAlchemy model."""
-    if existing_model := entity.__dict__.get("model"):
-        # Update existing model instance
-        for key, value in entity.__dict__.items():
-            if key != "model" and hasattr(existing_model, key):
-                setattr(existing_model, key, value)
+def _map_entity_to_model(
+    entity: T, model_class: Type[M], existing_model: Optional[M] = None
+) -> M:
+    """
+    Maps a domain entity instance to an SQLAlchemy model instance.
+    If an existing model is provided, it is updated with the entity's values.
+
+    Args:
+        entity: The domain entity instance to map from.
+        model_class: The target SQLAlchemy model class.
+        existing_model: An optional existing SQLAlchemy model instance to update.
+
+    Returns:
+        An instance of the SQLAlchemy model.
+    """
+    entity_fields = entity.__annotations__  # Get fields defined in the domain entity
+    if existing_model:
+        # Update the existing model with the entity's field values
+        for field in entity_fields:
+            if hasattr(existing_model, field) and hasattr(entity, field):
+                setattr(existing_model, field, getattr(entity, field))
         return existing_model
-    else:
-        # Create new model instance
-        if isinstance(entity, Item):
-            model_class = ItemModel
-        elif isinstance(entity, Collection):
-            model_class = CollectionModel
-        else:
-            raise ValueError(f"Unsupported entity type: {type(entity)}")
 
-        # Convert entity attributes to dict, excluding any attributes not in the model
-        model_attrs = {
-            k: v
-            for k, v in entity.__dict__.items()
-            if k != "model" and hasattr(model_class, k)
-        }
-        return model_class(**model_attrs)
+    # Create a new model instance with the entity's field values
+    mapped_data = {
+        field: getattr(entity, field)
+        for field in entity_fields
+        if hasattr(model_class, field)
+    }
+    return model_class(**mapped_data)

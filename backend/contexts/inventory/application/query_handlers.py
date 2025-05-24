@@ -1,109 +1,97 @@
-from typing import List, Optional
+from typing import Optional, List
+
+from sqlalchemy.orm import query
 
 from contexts.inventory.application.queries import (
-    CollectionDTO,
-    CountItemsQuery,
     GetItemByIdQuery,
-    GetItemsByCollectionQuery,
     ItemDTO,
-    ListActiveCollectionsQuery,
-    ListActiveItemsQuery,
-    ListCollectionsQuery,
     ListItemsQuery,
-    SearchItemsQuery,
+    GetCollectionByIdQuery,
+    CollectionDTO,
+    ListCollectionsQuery,
 )
 from contexts.inventory.domain.repositories import InventoryRepository
 
 
 class GetItemByIdQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
+    """Handles the GetUserByIdQuery."""
+
+    def __init__(self, repository: InventoryRepository):
+        self.repository = repository
 
     async def handle(self, query: GetItemByIdQuery) -> Optional[ItemDTO]:
-        print(f"Fetching item by ID: {query.item_id}")
-        item = await self.repo.get_by_id(query.item_id)
+        """
+        Executes the query to retrieve an item by ID.
+        Returns:
+            ItemDTO or None if the item is not found.
+        """
+        print(f"Handling GetItemByIdQuery for ID: {query.item_id}")
+        item = await self.repository.get_item_by_id(query.item_id)
         if not item:
-            raise ValueError(f"Item with ID '{query.item_id}' not found.")
+            print(f"Item with ID {query.item_id} not found.")
+            return None
         return ItemDTO.model_validate(item)
 
 
 class ListItemsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
+    """Handles the ListItemsQuery."""
+
+    def __init__(self, repository: InventoryRepository):
+        self.repository = repository
 
     async def handle(self, query: ListItemsQuery) -> List[ItemDTO]:
+        """
+        Executes the query to retrieve a list of items.
+        """
         print(
-            f"Listing items (active={query.is_active}, limit={query.limit}, offset={query.offset})"
+            f"Handling ListItemsQuery with limit={query.limit}, offset={query.offset}"
         )
+        items = await self.repository.list_all_items()
+        filtered_items = items
         if query.is_active is not None:
-            items = await self.repo.list_active_items(query.is_active)
-        else:
-            items = await self.repo.list_all()
-        # Pagination
-        paged = items[query.offset : query.offset + query.limit]
-        return [ItemDTO.model_validate(i) for i in paged]
+            filtered_items = [i for i in items if i.is_active == query.is_active]
+        paginated_items = filtered_items[query.offset : query.offset + query.limit]
+        return [ItemDTO.model_validate(item) for item in paginated_items]
 
 
-class SearchItemsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
+class GetCollectionByIdQueryHandler:
+    """Handles the GetCollectionByIdQuery."""
 
-    async def handle(self, query: SearchItemsQuery) -> List[ItemDTO]:
-        print(f"Searching items with keywords: '{query.query}'")
-        if not query.query.strip():
-            raise ValueError("Search query cannot be empty.")
-        items = await self.repo.search_items(query.query)
-        return [ItemDTO.model_validate(i) for i in items]
+    def __init__(self, repository: InventoryRepository):
+        self.repository = repository
 
-
-class CountItemsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
-
-    async def handle(self, query: CountItemsQuery) -> int:
-        print(f"Counting items (active={query.is_active})")
-        return await self.repo.count_items(query.is_active)
-
-
-class ListActiveItemsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
-
-    async def handle(self, query: ListActiveItemsQuery) -> List[ItemDTO]:
-        print(f"Listing active items={query.is_active}")
-        items = await self.repo.list_active_items(query.is_active)
-        return [ItemDTO.model_validate(i) for i in items]
-
-
-class GetItemsByCollectionQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
-
-    async def handle(self, query: GetItemsByCollectionQuery) -> List[ItemDTO]:
-        print(f"Fetching items for collection ID: {query.collection_id}")
-        # Validate collection exists
-        cols = await self.repo.list_collections()
-        if not any(c.id == query.collection_id for c in cols):
-            raise ValueError(f"Collection '{query.collection_id}' not found.")
-        items = await self.repo.get_by_collection_id(query.collection_id)
-        return [ItemDTO.model_validate(i) for i in items]
+    async def handle(self, query: GetCollectionByIdQuery) -> Optional[CollectionDTO]:
+        """
+        Executes the query to retrieve a collection by ID.
+        Returns:
+            CollectionDTO or None if the collection is not found.
+        """
+        print(f"Handling GetCollectionByIdQuery for ID: {query.collection_id}")
+        collection = await self.repository.get_collection_by_id(query.collection_id)
+        if not collection:
+            print(f"Collection with ID {query.collection_id} not found.")
+            return None
+        return CollectionDTO.model_validate(collection)
 
 
 class ListCollectionsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
+    """Handles the ListCollectionsQuery."""
+
+    def __init__(self, repository: InventoryRepository):
+        self.repository = repository
 
     async def handle(self, query: ListCollectionsQuery) -> List[CollectionDTO]:
-        print("Listing all collections")
-        cols = await self.repo.list_collections()
-        return [CollectionDTO.model_validate(c) for c in cols]
+        """
+        Executes the query to retrieve a list of collections.
+        """
+        print(
+            f"Handling ListCollectionsQuery with limit={query.limit}, offset={query.offset}"
+        )
 
-
-class ListActiveCollectionsQueryHandler:
-    def __init__(self, repo: InventoryRepository):
-        self.repo = repo
-
-    async def handle(self, query: ListActiveCollectionsQuery) -> List[CollectionDTO]:
-        print(f"Listing collections active={query.is_active}")
-        cols = await self.repo.list_active_collections(query.is_active)
-        return [CollectionDTO.model_validate(c) for c in cols]
+        # Fetch collections from the repository with pagination
+        collections = await self.repository.list_all_collections()
+        paginated_collections = collections[query.offset : query.offset + query.limit]
+        return [
+            CollectionDTO.model_validate(collection)
+            for collection in paginated_collections
+        ]

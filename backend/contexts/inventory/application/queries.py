@@ -1,63 +1,10 @@
 import uuid
-from typing import Optional
 
-from pydantic import BaseModel, Field
-
-
-# --- Input Models: parameters for each query ---
-class GetItemByIdQuery(BaseModel):
-    """Parameters for retrieving a single item by ID."""
-
-    item_id: uuid.UUID
+from pydantic import BaseModel
 
 
-class GetItemsByCollectionQuery(BaseModel):
-    """Parameters for retrieving items by collection ID."""
-
-    collection_id: uuid.UUID
-
-
-class SearchItemsQuery(BaseModel):
-    """Parameters for searching items by keyword(s)."""
-
-    query: str = Field(..., min_length=1)
-
-
-class CountItemsQuery(BaseModel):
-    """Parameters for counting items, optionally by active status."""
-
-    is_active: Optional[bool] = None
-
-
-class ListItemsQuery(BaseModel):
-    """Parameters for listing items (pagination, filtering)."""
-
-    limit: int = Field(100, gt=0, le=1000)
-    offset: int = Field(0, ge=0)
-    is_active: Optional[bool] = None
-
-
-class ListActiveItemsQuery(BaseModel):
-    """Parameters for listing items by active status."""
-
-    is_active: bool = Field(True)
-
-
-class ListCollectionsQuery(BaseModel):
-    """Parameters for listing all collections."""
-
-    pass
-
-
-class ListActiveCollectionsQuery(BaseModel):
-    """Parameters for listing collections by active status."""
-
-    is_active: bool = Field(True)
-
-
-# --- Output DTOs: results returned from queries ---
 class ItemDTO(BaseModel):
-    """Data Transfer Object for Item information."""
+    """DTO for returning item information to the client."""
 
     id: uuid.UUID
     name: str
@@ -68,17 +15,49 @@ class ItemDTO(BaseModel):
     serial_number: str
     location: str
     collection_id: uuid.UUID
+    is_active: bool
 
     class Config:
         from_attributes = True
 
 
 class CollectionDTO(BaseModel):
-    """Data Transfer Object for Collection information."""
+    """DTO for returning collection information to the client."""
 
     id: uuid.UUID
     name: str
     description: str
+    items: list[ItemDTO]
 
     class Config:
         from_attributes = True
+
+
+# --- Query Models (Optional, if you need specific query parameters) ---
+
+
+class GetItemByIdQuery(BaseModel):
+    """Represents the parameters needed for the GetItemById query."""
+
+    item_id: uuid.UUID
+
+
+class ListItemsQuery(BaseModel):
+    """Represents parameters for listing items (e.g., pagination, filtering)."""
+
+    limit: int = 100
+    offset: int = 0
+    is_active: bool | None = None
+
+
+class GetCollectionByIdQuery(BaseModel):
+    """Represents the parameters needed for the GetCollectionById query."""
+
+    collection_id: uuid.UUID
+
+
+class ListCollectionsQuery(BaseModel):
+    """Represents parameters for listing collections (e.g., pagination, filtering)."""
+
+    limit: int = 100
+    offset: int = 0

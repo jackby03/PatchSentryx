@@ -13,154 +13,78 @@ class InventoryRepository(abc.ABC):
     Defines the contract for how the application interacts with the inventory data store.
     """
 
-    # CRUD operations
+    # CRUD operations for Items
+
+    # Query operations
+    @abc.abstractmethod
+    async def get_item_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
+        """Retrieves an inventory item by its ID."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def list_all_items(self) -> list[Item]:
+        """Lists all inventory items in the repository."""
+        raise NotImplementedError
+
+    # Command operations
     @abc.abstractmethod
     async def add_item(self, item: Item) -> None:
         """Adds a new inventory item to the repository."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def get_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
-        """Retrieves an inventory item by its ID."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_all(self) -> list[Item]:
-        """Lists all inventory items in the repository."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def update(self, item: Item) -> None:
+    async def update_item(self, item: Item) -> None:
         """Updates an existing inventory item in the repository."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def delete(self, item_id: uuid.UUID) -> None:
+    async def delete_item(self, item_id: uuid.UUID) -> None:
         """Deletes an inventory item from the repository."""
         raise NotImplementedError
 
+    # CRUD operations for Collections
+
     # Query operations
     @abc.abstractmethod
-    async def get_by_name(self, name: str) -> Optional[Item]:
-        """Retrieves an inventory item by its name."""
+    async def get_collection_by_id(
+        self, collection_id: uuid.UUID
+    ) -> Optional[Collection]:
+        """Retrieves a collection by its ID."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def get_by_hostname(self, hostname: str) -> Optional[Item]:
-        """Retrieves an inventory item by its hostname."""
+    async def list_all_collections(self) -> list[Collection]:
+        """Lists all collections in the repository."""
+        raise NotImplementedError
+
+    # Command operations
+    @abc.abstractmethod
+    async def add_collection(self, collection: Collection) -> None:
+        """Adds a new collection to the repository."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def get_by_serial_number(self, serial_number: str) -> Optional[Item]:
-        """Retrieves an inventory item by its serial number."""
+    async def update_collection(self, collection: Collection) -> None:
+        """Updates an existing collection in the repository."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def get_by_location(self, location: str) -> Optional[Item]:
-        """Retrieves an inventory item by its location."""
+    async def delete_collection(self, collection_id: uuid.UUID) -> None:
+        """Deletes a collection from the repository, optionally deleting its items."""
+        raise NotImplementedError
+
+    # Additional operations
+    @abc.abstractmethod
+    async def get_items_by_collection_id(self, collection_id: uuid.UUID) -> list[Item]:
+        """Retrieves all items belonging to a specific collection."""
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def get_by_collection_id(self, collection_id: uuid.UUID) -> Optional[Item]:
-        """Retrieves an inventory item by its collection ID."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def get_by_brand(self, brand: str) -> Optional[Item]:
-        """Retrieves an inventory item by its brand."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def get_by_model(self, model: str) -> Optional[Item]:
-        """Retrieves an inventory item by its model."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def get_by_version(self, version: str) -> Optional[Item]:
-        """Retrieves an inventory item by its version."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def get_by_collection_name(self, collection_name: str) -> Optional[Item]:
-        """Retrieves an inventory item by its collection name."""
-        raise NotImplementedError
-
-    # Advanced operations
-    @abc.abstractmethod
-    async def filter_items(self, **filters) -> list[Item]:
-        """Filters inventory items based on multiple criteria."""
+    async def search_items(self, query: str) -> list[Item]:
+        """Searches for items based on a query string."""
         raise NotImplementedError
 
     @abc.abstractmethod
     async def count_items(self, is_active: Optional[bool] = None) -> int:
-        """Counts the total number of inventory items, optionally filtering by active status."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def update_item_status(self, item_id: uuid.UUID, is_active: bool) -> None:
-        """Updates the active status of an inventory item."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_active_items(self, is_active: bool = True) -> list[Item]:
-        """Lists all active or inactive items in the inventory."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def move_items_to_collection(
-        self, item_ids: list[uuid.UUID], target_collection_id: uuid.UUID
-    ) -> None:
-        """Moves items to a different collection."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_active_collections(self, is_active: bool = True) -> list[Collection]:
-        """Lists all active or inactive collections."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_items_by_collections(
-        self, collection_ids: list[uuid.UUID]
-    ) -> list[Item]:
-        """Lists all items belonging to multiple collections."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def delete_items_by_criteria(self, **filters) -> None:
-        """Deletes items based on specific criteria."""
-        raise NotImplementedError
-
-    # Collection operations
-    @abc.abstractmethod
-    async def add_collection(self, name: str, description: str) -> None:
-        """Adds a new collection to the inventory."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_collections(self) -> list:
-        """Lists all collections in the inventory."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def list_items_by_collection(self, collection_id: uuid.UUID) -> list[Item]:
-        """Lists all items belonging to a specific collection."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def delete_items_by_collection(self, collection_id: uuid.UUID) -> None:
-        """Deletes all items belonging to a specific collection."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def update_collection(
-        self, collection_id: uuid.UUID, name: str, description: str
-    ) -> None:
-        """Updates the details of a collection."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def delete_collection(
-        self, collection_id: uuid.UUID, delete_items: bool = True
-    ) -> None:
-        """Deletes a collection and optionally its associated items."""
+        """Counts the number of items, optionally filtering by active status."""
         raise NotImplementedError

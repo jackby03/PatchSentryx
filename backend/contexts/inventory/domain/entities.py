@@ -37,7 +37,6 @@ class Collection(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     name: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1, max_length=500)
-    is_active: bool = True
     items: list["Item"] = Field(default_factory=list)
 
     class Config:

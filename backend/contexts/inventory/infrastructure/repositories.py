@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Optional, Type, TypeVar
+from typing import Optional, TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,58 +16,52 @@ class SQLAlchemyInventoryRepository(InventoryRepository):
         self.commands = InventoryCommands(session)
         self.queries = InventoryQueries(session)
 
-    # Delegate commands
+    # CRUD operations for Item
+    # Query operations
+    async def get_item_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
+        await self.queries.get_item_by_id(item_id)
+
+    async def list_all_items(self) -> None:
+        await self.queries.list_all_items()
+
+    # Command operations
     async def add_item(self, item: Item) -> None:
         await self.commands.add_item(item)
 
-    async def update(self, item: Item) -> None:
+    async def update_item(self, item: Item) -> None:
         await self.commands.update_item(item)
 
-    async def delete(self, item_id: uuid.UUID) -> None:
+    async def delete_item(self, item_id: uuid.UUID) -> None:
         await self.commands.delete_item(item_id)
 
-    async def update_item_status(self, item_id: uuid.UUID, is_active: bool) -> None:
-        await self.commands.update_item_status(item_id, is_active)
+    # CRUD operations for Collection
+    # Query operations
+    async def get_collection_by_id(
+        self, collection_id: uuid.UUID
+    ) -> Optional[Collection]:
+        await self.queries.get_collection_by_id(collection_id)
 
-    async def move_items_to_collection(
-        self, item_ids: list[uuid.UUID], target_collection_id: uuid.UUID
-    ) -> None:
-        await self.commands.move_items_to_collection(item_ids, target_collection_id)
+    async def list_all_collections(self) -> None:
+        await self.list_all_collections()
 
-    async def add_collection(self, name: str, description: str) -> None:
-        await self.commands.add_collection(name, description)
+    # Command operations
+    async def add_collection(self, collection: Collection) -> None:
+        await self.commands.add_collection(collection)
 
-    async def update_collection(
-        self, collection_id: uuid.UUID, name: str, description: str
-    ) -> None:
-        await self.commands.update_collection(collection_id, name, description)
+    async def update_collection(self, collection: Collection) -> None:
+        await self.commands.update_collection(collection)
 
     async def delete_collection(
         self, collection_id: uuid.UUID, delete_items: bool = True
     ) -> None:
-        await self.commands.delete_collection(collection_id, delete_items)
+        await self.commands.delete_collection(collection_id)
 
-    # Delegate queries
-    async def get_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
-        return await self.queries.get_item_by_id(item_id)
+    # Additional operations
+    async def get_items_by_collection_id(self, collection_id: uuid.UUID) -> None:
+        await self.queries.get_items_by_collection_id(collection_id)
 
-    async def list_all(self) -> list[Item]:
-        return await self.queries.list_all_items()
+    async def search_items(self, query: str) -> None:
+        await self.queries.search_items(query)
 
-    async def get_by_collection_id(self, collection_id: uuid.UUID) -> list[Item]:
-        return await self.queries.get_items_by_collection_id(collection_id)
-
-    async def search_items(self, query: str) -> list[Item]:
-        return await self.queries.search_items(query)
-
-    async def count_items(self, is_active: Optional[bool] = None) -> int:
-        return await self.queries.count_items(is_active)
-
-    async def list_active_items(self, is_active: bool = True) -> list[Item]:
-        return await self.queries.list_active_items(is_active)
-
-    async def list_collections(self) -> list[Collection]:
-        return await self.queries.list_collections()
-
-    async def list_active_collections(self, is_active: bool = True) -> list[Collection]:
-        return await self.queries.list_active_collections(is_active)
+    async def count_items(self, is_active: Optional[bool] = None) -> None:
+        await self.queries.count_items(is_active)

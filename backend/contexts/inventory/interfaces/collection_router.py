@@ -1,130 +1,136 @@
 import uuid
 from typing import List
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Body, Depends
 
-from contexts.inventory.application.commands import (
-    CreateCollectionCommand,
-    DeleteCollectionCommand,
-    UpdateCollectionCommand,
-)
+from contexts.inventory.application.commands import CreateCollectionCommand
 from contexts.inventory.application.queries import (
     CollectionDTO,
-    GetItemsByCollectionQuery,
-    ItemDTO,
-    ListActiveCollectionsQuery,
+    GetCollectionByIdQuery,
     ListCollectionsQuery,
 )
-from contexts.inventory.interfaces.dependencies import (
-    CreateCollectionHandler,
-    DeleteCollectionHandler,
-    GetItemsByCollectionHandler,
-    ListActiveCollectionsHandler,
-    ListCollectionsHandler,
-    UpdateCollectionHandler,
-)
+from contexts.users.infrastructure.messaging import UserCommandPublisher
+from core.dependencies import MqChannel
+from core.errors import DomainError, EntityNotFoundError
 
-router = APIRouter(prefix="/collections", tags=["collections"])
+router = APIRouter()
+
+
+# --- Command Endpoints ---
+@router.post(
+    "/",
+    response_model=CollectionDTO,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new collection",
+    description="Accepts collection creation details and creates a new collection in the database.",
+)
+async def create_collection(
+    channel: MqChannel,
+    command_data: CreateCollectionCommand = Body(...),
+):
+    publisher = UserCommandPublisher(channel)
+    try:
+        command = CreateCollectionCommand(**command_data.model_dump())
+        raise Exception("Not yet implemented")
+    except DomainError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to publish user creation command.",
+        )
+
+
+@router.put(
+    "/{collection_id}",
+    response_model=CollectionDTO,
+    status_code=status.HTTP_201_CREATED,
+    summary="Update a collection",
+    description="Accepts collection update details and updates an existing collection in the database.",
+)
+async def update_collection(
+    channel: MqChannel,
+    command_data: CreateCollectionCommand = Body(...),
+):
+    publisher = UserCommandPublisher(channel)
+    try:
+        command = CreateCollectionCommand(**command_data.model_dump())
+        raise Exception("Not yet implemented")
+    except DomainError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to publish user creation command.",
+        )
+
+
+@router.delete(
+    "/{collection_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a collection",
+    description="Accepts collection ID and deletes the corresponding collection from the database.",
+)
+async def delete_collection(
+    channel: MqChannel,
+    collection_id: uuid.UUID,
+):
+    publisher = UserCommandPublisher(channel)
+    try:
+        raise Exception("Not yet implemented")
+    except DomainError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to publish user creation command.",
+        )
+
 
 # --- Query Endpoints ---
+@router.get(
+    "/{collection_id}",
+    response_model=CollectionDTO,
+    status_code=status.HTTP_200_OK,
+    summary="List collections",
+    description="Retrieves a list of collections from the database.",
+)
+async def get_collection(collection_id: uuid.UUID, handler: GetCollectionByIdQuery):
+    query = GetCollectionByIdQuery(collection_id=collection_id)
+    try:
+        collection_dto = await handler.handle(query)
+        if collection_dto is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
+            )
+        return collection_dto
+    except EntityNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        print(f"Error getting collection by ID {collection_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while retrieving the collection.",
+        )
 
 
-@router.get("", response_model=List[CollectionDTO])
+@router.get(
+    "/",
+    response_model=List[CollectionDTO],
+    status_code=status.HTTP_200_OK,
+    summary="List collections",
+    description="Retrieves a list of collections from the database.",
+)
 async def list_collections(
-    handler: ListCollectionsHandler,
+    handler: ListCollectionsQuery,
+    query_params: ListCollectionsQuery = Depends(),
 ):
-    # List all collections
-    return await handler.handle(ListCollectionsQuery())
-
-
-@router.get("/active", response_model=List[CollectionDTO])
-async def list_active_collections(
-    handler: ListActiveCollectionsHandler,
-):
-    # List only active collections
-    return await handler.handle(ListActiveCollectionsQuery())
-
-
-@router.post("", response_model=CollectionDTO, status_code=status.HTTP_201_CREATED)
-async def create_collection(
-    cmd: CreateCollectionCommand,
-    create_handler: CreateCollectionHandler,
-    list_handler: ListCollectionsHandler,
-):
-    # Create new collection
     try:
-        await create_handler.handle(cmd)
-    except ValueError as ve:
+        collection_dtos = await handler.handle(query_params)
+        return collection_dtos
+    except Exception as e:
+        print(f"Error listing collections: {e}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve)
-        ) from ve
-
-    # Return the newly created collection by matching name
-    cols = await list_handler.handle(ListCollectionsQuery())
-    for c in cols:
-        if c.name == cmd.name:
-            return c
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Created collection not found.",
-    )
-
-
-@router.put("/{collection_id}", response_model=CollectionDTO)
-async def update_collection(
-    collection_id: uuid.UUID,
-    cmd: UpdateCollectionCommand,
-    update_handler: UpdateCollectionHandler,
-    list_handler: ListCollectionsHandler,
-):
-    # Ensure path and body IDs match
-    if cmd.id != collection_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="ID mismatch."
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while listing collections.",
         )
-    try:
-        await update_handler.handle(cmd)
-    except ValueError as ve:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(ve)
-        ) from ve
-    # Return updated collection
-    cols = await list_handler.handle(ListCollectionsQuery())
-    for c in cols:
-        if c.id == collection_id:
-            return c
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Updated collection not found.",
-    )
-
-
-@router.delete("/{collection_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_collection(
-    collection_id: uuid.UUID,
-    delete_handler: DeleteCollectionHandler,
-    cmd: DeleteCollectionCommand,
-):
-    # Validate ID
-    if cmd.id != collection_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="ID mismatch."
-        )
-    try:
-        await delete_handler.handle(cmd)
-    except ValueError as ve:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(ve)
-        ) from ve
-
-
-@router.get("/{collection_id}/items", response_model=List[ItemDTO])
-async def list_items_in_collection(
-    collection_id: uuid.UUID,
-    query_handler: GetItemsByCollectionHandler,
-):
-    # Retrieve items for a collection
-    items = await query_handler.handle(
-        GetItemsByCollectionQuery(collection_id=collection_id)
-    )
-    return items
