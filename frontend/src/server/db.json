@@ -1,10 +1,26 @@
 {
   "users": [
     {
-      "id": "081b",
-      "fullname": "María Palacios Paredes",
-      "email": "mariap@gmail.com",
-      "password": "$2b$10$pcxqBbVZydoH5VkaqOpEpOyjFxZ1capRil0MjQjTxBHBJ.YRZp97y"
+      "id": "3490bac4-380f-4bf8-8f83-ab0789983cbe",
+      "fullname": "Juan Paredes Gonzales",
+      "email": "juanp@gmail.com",
+      "password": "Ju@n1234"
+    }
+  ],
+  "firewalls": [
+    {
+      "id": "4030be80-b243-42dd-8f08-0d00ad8076ea",
+      "name": "Firewall Principal",
+      "hostname": "fw-main.local",
+      "version": "1.0.0",
+      "brand": "Fortinet",
+      "model": "ASA5506",
+      "serial_number": "SN123456789",
+      "location": "Data Center Lima",
+      "collection_id": "3490bac4-380f-4bf8-8f83-ab0789983cbe",
+      "is_active": true,
+      "created_at": "2025-05-24T04:41:51.821Z",
+      "updated_at": "2025-05-24T05:04:16.037Z"
     }
   ]
 }

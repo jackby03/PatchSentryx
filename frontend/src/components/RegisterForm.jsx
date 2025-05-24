@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import bcrypt from "bcryptjs";
+import { v4 as uuidv4 } from "uuid";
 import "./RegisterForm.css";
 
 const RegisterForm = ({ onLoginClick }) => {
@@ -8,7 +8,6 @@ const RegisterForm = ({ onLoginClick }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // Expresiones regulares para validación
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
@@ -17,7 +16,6 @@ const RegisterForm = ({ onLoginClick }) => {
     e.preventDefault();
     setError("");
 
-    // Validaciones
     if (!fullname.trim() || !email.trim() || !password.trim()) {
       setError("Todos los campos son obligatorios.");
       return;
@@ -34,7 +32,6 @@ const RegisterForm = ({ onLoginClick }) => {
     }
 
     try {
-      // Verificar si el correo ya existe en la API
       const res = await fetch("http://localhost:3001/users?email=" + encodeURIComponent(email));
       const users = await res.json();
       if (users.length > 0) {
@@ -42,14 +39,12 @@ const RegisterForm = ({ onLoginClick }) => {
         return;
       }
 
-      // Encriptar la contraseña antes de guardar
-      const hashedPassword = bcrypt.hashSync(password, 10);
+      const id = uuidv4();
 
-      // Registrar usuario en la API
       const response = await fetch("http://localhost:3001/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullname, email, password: hashedPassword }),
+        body: JSON.stringify({ id, fullname, email, password }),
       });
 
       if (response.ok) {
