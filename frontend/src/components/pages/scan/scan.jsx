@@ -17,23 +17,20 @@ const initialState = {
 const Scan = () => {
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
-  const [hasInventory, setHasInventory] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
     const firewallToEdit = location.state?.firewall;
     
     if (firewallToEdit) {
       setForm(firewallToEdit);
       setIsEditing(true);
-    } else if (userId) {
-      getFirewalls().then(firewalls => {
-        const userFirewalls = firewalls.filter(fw => fw.collection_id === userId);
-        setHasInventory(userFirewalls.length > 0);
-      });
+    } else {
+      // Resetear el formulario cuando no estamos editando
+      setForm(initialState);
+      setIsEditing(false);
     }
   }, [location.state]);
 
@@ -49,15 +46,13 @@ const Scan = () => {
       return;
     }
     
-    // Validar campos obligatorios
-    for (let key in form) {
-        if (
-            key !== "id" &&
-            (form[key] === undefined || form[key] === null || form[key] === "")
-        ){
-            setError("Todos los campos son obligatorios.");
-            return;
-        }
+    // Validación de campos obligatorios mejorada
+    const requiredFields = ['name', 'hostname', 'version', 'brand', 'model', 'serial_number', 'location'];
+    for (const field of requiredFields) {
+      if (!form[field] || form[field].trim().length < 1) {
+        setError(`El campo ${field.replace('_', ' ')} es obligatorio.`);
+        return;
+      }
     }
     
     try {
@@ -77,122 +72,110 @@ const Scan = () => {
     <div className="scan-container">
       <Sidebar />
       <div className="scan-content">
-        {!hasInventory || isEditing ? (
-          <>
-            <h2 style={{marginBottom: 24, color: "#2c3e50"}}>
-              {isEditing ? "Editar Firewall" : "Registrar Firewall"}
-            </h2>
-            <form onSubmit={handleSubmit} className="firewall-form">
-              <div>
-                <label>Nombre</label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: Firewall Principal"
-                />
-              </div>
-              <div>
-                <label>Hostname</label>
-                <input
-                  name="hostname"
-                  value={form.hostname}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: fw-main.local"
-                />
-              </div>
-              <div>
-                <label>Versión</label>
-                <input
-                  name="version"
-                  value={form.version}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: 1.0.0"
-                />
-              </div>
-              <div>
-                <label>Marca</label>
-                <input
-                  name="brand"
-                  value={form.brand}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: Cisco"
-                />
-              </div>
-              <div>
-                <label>Modelo</label>
-                <input
-                  name="model"
-                  value={form.model}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: ASA5506"
-                />
-              </div>
-              <div>
-                <label>Serial Number</label>
-                <input
-                  name="serial_number"
-                  value={form.serial_number}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: SN123456789"
-                />
-              </div>
-              <div>
-                <label>Ubicación</label>
-                <input
-                  name="location"
-                  value={form.location}
-                  onChange={handleChange}
-                  minLength={1}
-                  maxLength={100}
-                  required
-                  placeholder="Ej: Data Center Lima"
-                />
-              </div>
-              {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+        <>
+          <h2 style={{marginBottom: 24, color: "#2c3e50"}}>
+            {isEditing ? "Editar Firewall" : "Agregar Nuevo Firewall"}
+          </h2>
+          <form onSubmit={handleSubmit} className="firewall-form">
+            <div>
+              <label>Nombre</label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: Firewall Principal"
+              />
+            </div>
+            <div>
+              <label>Hostname</label>
+              <input
+                name="hostname"
+                value={form.hostname}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: fw-main.local"
+              />
+            </div>
+            <div>
+              <label>Versión</label>
+              <input
+                name="version"
+                value={form.version}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: 1.0.0"
+              />
+            </div>
+            <div>
+              <label>Marca</label>
+              <input
+                name="brand"
+                value={form.brand}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: Cisco"
+              />
+            </div>
+            <div>
+              <label>Modelo</label>
+              <input
+                name="model"
+                value={form.model}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: ASA5506"
+              />
+            </div>
+            <div>
+              <label>Serial Number</label>
+              <input
+                name="serial_number"
+                value={form.serial_number}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: SN123456789"
+              />
+            </div>
+            <div>
+              <label>Ubicación</label>
+              <input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                minLength={1}
+                maxLength={100}
+                required
+                placeholder="Ej: Data Center Lima"
+              />
+            </div>
+            {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
+            <div className="form-actions">
               <button type="submit" className="add-provider-btn">
                 {isEditing ? "Actualizar Firewall" : "Guardar Firewall"}
               </button>
-              {isEditing && (
-                <button 
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => navigate("/inventory")}
-                >
-                  Cancelar
-                </button>
-              )}
-            </form>
-          </>
-        ) : (
-          <div>
-            <h2>Ya tienes inventario registrado</h2>
-            <button 
-              className="add-provider-btn" 
-              onClick={() => navigate("/inventory")}
-            >
-              Ver Inventario
-            </button>
-          </div>
-        )}
+              <button 
+                type="button"
+                className="cancel-btn"
+                onClick={() => navigate("/inventory")}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </>
       </div>
     </div>
   );

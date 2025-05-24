@@ -9,18 +9,32 @@
   ],
   "firewalls": [
     {
-      "id": "4030be80-b243-42dd-8f08-0d00ad8076ea",
+      "id": "060ed95e-7126-4571-af6f-7d028dd81974",
       "name": "Firewall Principal",
       "hostname": "fw-main.local",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "brand": "Fortinet",
       "model": "ASA5506",
       "serial_number": "SN123456789",
       "location": "Data Center Lima",
       "collection_id": "3490bac4-380f-4bf8-8f83-ab0789983cbe",
       "is_active": true,
-      "created_at": "2025-05-24T04:41:51.821Z",
-      "updated_at": "2025-05-24T05:04:16.037Z"
+      "created_at": "2025-05-24T05:12:51.411Z",
+      "updated_at": "2025-05-24T05:12:51.411Z"
+    },
+    {
+      "id": "f9170e56-dc17-4c0d-bda5-29e18ade87d9",
+      "name": "Firewall Secundario",
+      "hostname": "fw-second.local",
+      "version": "2.0.0",
+      "brand": "Cisco",
+      "model": "ASA5534",
+      "serial_number": "SN234567890",
+      "location": "Data Sur Lima",
+      "collection_id": "3490bac4-380f-4bf8-8f83-ab0789983cbe",
+      "is_active": true,
+      "created_at": "2025-05-24T05:22:54.464Z",
+      "updated_at": "2025-05-24T05:22:54.464Z"
     }
   ]
 }

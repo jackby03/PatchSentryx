@@ -9,6 +9,7 @@ const Inventory = () => {
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [selected, setSelected] = useState(null);
+  const [scanning, setScanning] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +34,19 @@ const Inventory = () => {
     navigate('/scan', { state: { firewall } });
   };
 
+  const handleAdd = () => {
+    navigate('/scan');
+  };
+
+  const handleScan = () => {
+    setScanning(true);
+    // Simular escaneo por 2 segundos
+    setTimeout(() => {
+      setScanning(false);
+      loadFirewalls(); // Recargar los firewalls después del escaneo
+    }, 2000);
+  };
+
   const filtered = firewalls.filter(fw => {
     const matchesSearch = fw.name.toLowerCase().includes(search.toLowerCase());
     const matchesDate = date ? fw.created_at && fw.created_at.startsWith(date) : true;
@@ -43,6 +57,16 @@ const Inventory = () => {
     <div className="inventory-container">
       <Sidebar />
       <div className="inventory-content inventory-content-right">
+        {/* Botones flotantes */}
+        <div className="floating-buttons">
+          <button className="floating-btn floating-btn-left" onClick={handleAdd}>
+            Agregar
+          </button>
+          <button className="floating-btn floating-btn-right" onClick={handleScan}>
+            Escanear
+          </button>
+        </div>
+
         <div className="inventory-header">
           <h2>Firewall Inventory</h2>
         </div>
@@ -117,13 +141,7 @@ const Inventory = () => {
             </div>
           ) : (
             <div className="empty-inventory">
-              <p>No hay registros en el inventario, por favor registra uno.</p>
-              <button 
-                className="add-firewall-btn" 
-                onClick={() => navigate("/scan")}
-              >
-                Add Firewall
-              </button>
+              <p>No hay registros en el inventario.</p>
             </div>
           )}
         </div>
@@ -152,6 +170,15 @@ const Inventory = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {scanning && (
+          <div className="scanning-modal">
+            <div className="scanning-content">
+              <h3>Escaneando...</h3>
+              <div className="scanning-spinner"></div>
             </div>
           </div>
         )}
