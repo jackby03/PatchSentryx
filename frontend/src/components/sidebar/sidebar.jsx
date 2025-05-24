@@ -1,7 +1,7 @@
 import React from 'react';
 import './sidebar.css';
 import { useNavigate } from 'react-router-dom';
-import { getFirewalls } from '../../services/services';
+import { getItems } from '../../services/services';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -12,9 +12,9 @@ const Sidebar = () => {
       navigate("/");
       return;
     }
-    const firewalls = await getFirewalls();
-    const userFirewalls = firewalls.filter(fw => fw.collection_id === userId);
-    if (userFirewalls.length === 0) {
+    const items = await getItems();
+    const userItems = items.filter(fw => fw.user_id === userId);
+    if (userItems.length === 0) {
       navigate("/scan");
     } else {
       navigate("/inventory");

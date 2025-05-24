@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../../sidebar/sidebar";
 import "./scan.css";
-import { createFirewall, getFirewalls, updateFirewall } from "../../../services/services";
+import { createItem, getItems, updateItem } from "../../../services/services";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const initialState = {
@@ -18,17 +18,23 @@ const Scan = () => {
   const [form, setForm] = useState(initialState);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isFirstItem, setIsFirstItem] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const firewallToEdit = location.state?.firewall;
+    const itemToEdit = location.state?.item;
+    const userId = localStorage.getItem("userId");
+
+    getItems().then(items => {
+      const userItems = items.filter(fw => fw.user_id === userId);
+      setIsFirstItem(userItems.length === 0);
+    });
     
-    if (firewallToEdit) {
-      setForm(firewallToEdit);
+    if (itemToEdit) {
+      setForm(itemToEdit);
       setIsEditing(true);
     } else {
-      // Resetear el formulario cuando no estamos editando
       setForm(initialState);
       setIsEditing(false);
     }
@@ -46,7 +52,6 @@ const Scan = () => {
       return;
     }
     
-    // Validación de campos obligatorios mejorada
     const requiredFields = ['name', 'hostname', 'version', 'brand', 'model', 'serial_number', 'location'];
     for (const field of requiredFields) {
       if (!form[field] || form[field].trim().length < 1) {
@@ -57,14 +62,22 @@ const Scan = () => {
     
     try {
       if (isEditing) {
-        await updateFirewall(form);
+        await updateItem(form);
       } else {
-        await createFirewall(form, userId);
+        await createItem(form, userId);
       }
       navigate("/inventory");
     } catch (err) {
       setError("Ocurrió un error al guardar el firewall. Por favor intenta nuevamente.");
       console.error("Error saving firewall:", err);
+    }
+  };
+
+  const handleCancel = () => {
+    if (isFirstItem) {
+      navigate("/dashboard");
+    } else {
+      navigate("/inventory");
     }
   };
 
@@ -169,7 +182,7 @@ const Scan = () => {
               <button 
                 type="button"
                 className="cancel-btn"
-                onClick={() => navigate("/inventory")}
+                onClick={handleCancel}
               >
                 Cancelar
               </button>

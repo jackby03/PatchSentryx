@@ -1,18 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
 
-const API_URL = "http://localhost:3001/firewalls";
+const API_URL = "http://localhost:3001/items";
 
-export const getFirewalls = async () => {
+export const getItems = async () => {
   const res = await fetch(API_URL);
   return res.json();
 };
 
-export const createFirewall = async (firewall, userId) => {
+export const createItem = async (item, userId) => {
   const now = new Date();
-  const newFirewall = {
+  const newItem = {
     id: uuidv4(),
-    ...firewall,
-    collection_id: userId,
+    ...item,
+    user_id: userId,
     is_active: true,
     created_at: now.toISOString(),
     updated_at: now.toISOString()
@@ -21,27 +21,27 @@ export const createFirewall = async (firewall, userId) => {
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newFirewall),
+    body: JSON.stringify(newItem),
   });
   return res.json();
 };
 
-export const updateFirewall = async (firewall) => {
+export const updateItem = async (item) => {
   const now = new Date();
-  const updatedFirewall = {
-    ...firewall,
+  const updatedItem = {
+    ...item,
     updated_at: now.toISOString()
   };
   
-  const res = await fetch(`${API_URL}/${firewall.id}`, {
+  const res = await fetch(`${API_URL}/${item.id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updatedFirewall),
+    body: JSON.stringify(updatedItem),
   });
   return res.json();
 };
 
-export const deleteFirewall = async (id) => {
+export const deleteItem = async (id) => {
   const res = await fetch(`${API_URL}/${id}`, {
     method: "DELETE",
   });

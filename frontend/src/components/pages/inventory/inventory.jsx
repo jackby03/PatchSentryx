@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import './inventory.css';
 import Sidebar from '../../sidebar/sidebar';
-import { getFirewalls, deleteFirewall } from '../../../services/services';
+import { getItems, deleteItem } from '../../../services/services';
 import { useNavigate } from 'react-router-dom';
 
 const Inventory = () => {
-  const [firewalls, setFirewalls] = useState([]);
+  const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
   const [selected, setSelected] = useState(null);
@@ -13,25 +13,25 @@ const Inventory = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadFirewalls();
+    loadItems();
   }, []);
 
-  const loadFirewalls = () => {
+  const loadItems = () => {
     const userId = localStorage.getItem("userId");
-    getFirewalls().then(allFirewalls => {
-      setFirewalls(allFirewalls.filter(fw => fw.collection_id === userId));
+    getItems().then(allItems => {
+      setItems(allItems.filter(fw => fw.user_id === userId));
     });
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("¿Estás seguro de eliminar este firewall?")) {
-      await deleteFirewall(id);
-      loadFirewalls();
+    if (window.confirm("¿Estás seguro de eliminar este item?")) {
+      await deleteItem(id);
+      loadItems();
     }
   };
 
-  const handleEdit = (firewall) => {
-    navigate('/scan', { state: { firewall } });
+  const handleEdit = (item) => {
+    navigate('/scan', { state: { item } });
   };
 
   const handleAdd = () => {
@@ -40,14 +40,13 @@ const Inventory = () => {
 
   const handleScan = () => {
     setScanning(true);
-    // Simular escaneo por 2 segundos
     setTimeout(() => {
       setScanning(false);
-      loadFirewalls(); // Recargar los firewalls después del escaneo
+      loadItems(); 
     }, 2000);
   };
 
-  const filtered = firewalls.filter(fw => {
+  const filtered = items.filter(fw => {
     const matchesSearch = fw.name.toLowerCase().includes(search.toLowerCase());
     const matchesDate = date ? fw.created_at && fw.created_at.startsWith(date) : true;
     return matchesSearch && matchesDate;
@@ -57,7 +56,6 @@ const Inventory = () => {
     <div className="inventory-container">
       <Sidebar />
       <div className="inventory-content inventory-content-right">
-        {/* Botones flotantes */}
         <div className="floating-buttons">
           <button className="floating-btn floating-btn-left" onClick={handleAdd}>
             Agregar
@@ -68,7 +66,7 @@ const Inventory = () => {
         </div>
 
         <div className="inventory-header">
-          <h2>Firewall Inventory</h2>
+          <h2>Items Inventory</h2>
         </div>
         <div className="search-filters search-filters-below">
           <div className="search-box">
@@ -126,7 +124,7 @@ const Inventory = () => {
                       <span>{fw.location}</span>
                     </div>
                     <div className="detail-row">
-                      <span className="detail-label">Last Scan:</span>
+                      <span className="detail-label">Create:</span>
                       <span>{fw.created_at ? new Date(fw.created_at).toLocaleString() : "N/A"}</span>
                     </div>
                   </div>
@@ -150,7 +148,7 @@ const Inventory = () => {
           <div className="firewall-modal">
             <div className="modal-content">
               <div className="modal-header">
-                <h3>Firewall Details</h3>
+                <h3>Item Details</h3>
                 <button 
                   className="close-modal"
                   onClick={() => setSelected(null)}
@@ -161,7 +159,9 @@ const Inventory = () => {
               <div className="modal-body">
                 <table>
                   <tbody>
-                    {Object.entries(selected).map(([k, v]) => (
+                    {Object.entries(selected)
+                    .filter(([k]) => k !== "user_id" && k !== "is_active")
+                    .map(([k, v]) => (
                       <tr key={k}>
                         <td className="detail-key">{k}</td>
                         <td className="detail-value">{v}</td>
