@@ -1,12 +1,9 @@
 from contexts.inventory.application.commands import (
     CreateItemCommand,
-    UpdateItemCommand,
     DeleteItemCommand,
-    CreateCollectionCommand,
-    UpdateCollectionCommand,
-    DeleteCollectionCommand,
+    UpdateItemCommand,
 )
-from contexts.inventory.domain.entities import Item, Collection
+from contexts.inventory.domain.entities import Item
 from contexts.inventory.infrastructure.repositories import InventoryRepository
 
 
@@ -63,119 +60,3 @@ class DeleteItemCommandHandler:
             return
         await self.repository.delete_item(command.id)
         print(f"Deleted item {item.id} successfully.")
-
-
-# --- Collection Commands ---
-
-
-class CreateCollectionCommandHandler:
-    """Handles the CreateCollectionCommand."""
-
-    def __init__(self, repository: InventoryRepository):
-        """
-        Initializes the handler with the repository.
-
-        Args:
-            repository: An instance of InventoryRepository.
-        """
-        self.repository = repository
-
-    async def handle(self, command: CreateCollectionCommand) -> Collection:
-        """
-        Handles the creation of a new Collection.
-
-        Args:
-            command: The CreateCollectionCommand containing the data to create a Collection.
-
-        Returns:
-            The created Collection.
-        """
-        print(f"Handling CreateCollectionCommand for {command.name}")
-        collection = Collection(
-            name=command.name,
-            description=command.description,
-            items=[],
-        )
-        await self.repository.add_collection(collection)
-        print(f"Created collection {collection.id} successfully.")
-        return collection
-
-
-class UpdateCollectionCommandHandler:
-    """Handles the UpdateCollectionCommand."""
-
-    def __init__(self, repository: InventoryRepository):
-        """
-        Initializes the handler with the repository.
-
-        Args:
-            repository: An instance of InventoryRepository.
-        """
-        self.repository = repository
-
-    async def handle(self, command: UpdateCollectionCommand) -> Collection:
-        """
-        Handles the update of an existing Collection.
-
-        Args:
-            command: The UpdateCollectionCommand containing the data to update the Collection.
-
-        Returns:
-            The updated Collection.
-
-        Raises:
-            Exception: If the Collection with the given ID is not found.
-        """
-        print(f"Handling UpdateCollectionCommand for {command.id}")
-
-        # Fetch the existing collection
-        collection = await self.repository.get_collection_by_id(command.id)
-        if not collection:
-            raise Exception(f"Collection with ID {command.id} not found.")
-
-        # Update attributes
-        if command.name is not None:
-            collection.name = command.name
-        if command.description is not None:
-            collection.description = command.description
-        if command.items is not None:
-            collection.items = command.items
-
-        # Persist the changes
-        await self.repository.update_collection(collection)
-        print(f"Updated collection {collection.id} successfully.")
-        return collection
-
-
-class DeleteCollectionCommandHandler:
-    """Handles the DeleteCollectionCommand."""
-
-    def __init__(self, repository: InventoryRepository):
-        """
-        Initializes the handler with the repository.
-
-        Args:
-            repository: An instance of InventoryRepository.
-        """
-        self.repository = repository
-
-    async def handle(self, command: DeleteCollectionCommand) -> None:
-        """
-        Handles the deletion of an existing Collection.
-
-        Args:
-            command: The DeleteCollectionCommand containing the ID of the Collection to delete.
-
-        Raises:
-            Exception: If the Collection with the given ID is not found.
-        """
-        print(f"Handling DeleteCollectionCommand for {command.id}")
-
-        # Fetch the existing collection to ensure it exists
-        collection = await self.repository.get_collection_by_id(command.id)
-        if not collection:
-            raise Exception(f"Collection with ID {command.id} not found.")
-
-        # Delete the collection from the repository
-        await self.repository.delete_collection(command.id)
-        print(f"Deleted collection {command.id} successfully.")

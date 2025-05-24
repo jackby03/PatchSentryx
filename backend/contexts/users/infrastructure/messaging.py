@@ -38,4 +38,3 @@ class UserCommandPublisher:
 
     # Add methods for other commands if needed
     # async def publish_update_user_command(self, command: UpdateUserCommand): ...
-

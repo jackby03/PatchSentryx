@@ -7,20 +7,13 @@ from aio_pika.abc import AbstractIncomingMessage
 
 from contexts.inventory.application.command_handlers import (
     CreateItemCommandHandler,
-    UpdateItemCommandHandler,
     DeleteItemCommandHandler,
-    CreateCollectionCommandHandler,
-    UpdateCollectionCommandHandler,
-    DeleteCollectionCommandHandler,
+    UpdateItemCommandHandler,
 )
-
 from contexts.inventory.application.commands import (
     CreateItemCommand,
-    UpdateItemCommand,
     DeleteItemCommand,
-    CreateCollectionCommand,
-    UpdateCollectionCommand,
-    DeleteCollectionCommand,
+    UpdateItemCommand,
 )
 from contexts.inventory.infrastructure.repositories import SQLAlchemyInventoryRepository
 from core.database import AsyncSessionFactory, close_db
@@ -62,30 +55,6 @@ COMMAND_CONFIG = {
         "entity": "item",
         "operation": "Deleted",
     },
-    "create_collection": {
-        "queue": "create_collection_queue",
-        "routing_key": "inventory.command.create_collection",
-        "command_cls": CreateCollectionCommand,
-        "handler_cls": CreateCollectionCommandHandler,
-        "entity": "collection",
-        "operation": "Created",
-    },
-    "update_collection": {
-        "queue": "update_collection_queue",
-        "routing_key": "inventory.command.update_collection",
-        "command_cls": UpdateCollectionCommand,
-        "handler_cls": UpdateCollectionCommandHandler,
-        "entity": "collection",
-        "operation": "Updated",
-    },
-    "delete_collection": {
-        "queue": "delete_collection_queue",
-        "routing_key": "inventory.command.delete_collection",
-        "command_cls": DeleteCollectionCommand,
-        "handler_cls": DeleteCollectionCommandHandler,
-        "entity": "collection",
-        "operation": "Deleted",
-    },
 }
 
 
@@ -104,14 +73,18 @@ def create_message_processor(config):
             try:
                 data = json.loads(payload)
                 cmd = config["command_cls"](**data)
-                print(f"[InventoryConsumer] Handling {config['operation'].lower()} {config['entity']} command")
+                print(
+                    f"[InventoryConsumer] Handling {config['operation'].lower()} {config['entity']} command"
+                )
                 async with AsyncSessionFactory() as session:
                     repo = SQLAlchemyInventoryRepository(session)
                     handler = config["handler_cls"](repo)
                     await handler.handle(cmd)
                     await session.commit()
                     await message.ack()
-                    print(f"[InventoryConsumer] {config['operation']} {config['entity']} (id: {getattr(cmd, 'id', None)})")
+                    print(
+                        f"[InventoryConsumer] {config['operation']} {config['entity']} (id: {getattr(cmd, 'id', None)})"
+                    )
 
             except DomainError as de:
                 print(f"[InventoryConsumer] DomainError: {de}, rejecting")
@@ -135,7 +108,9 @@ async def consume_inventory_commands():
         queue = await channel.get_queue(config["queue"])
         processor = create_message_processor(config)
         await queue.consume(processor)
-        print(f"[InventoryConsumer] Listening on {config['queue']} for {config['entity']} {cmd_name.split('_')[0]} commands")
+        print(
+            f"[InventoryConsumer] Listening on {config['queue']} for {config['entity']} {cmd_name.split('_')[0]} commands"
+        )
 
     print("[InventoryConsumer] Waiting for messages. CTRL+C to exit")
     await asyncio.Event().wait()

@@ -16,28 +16,8 @@ class Item(BaseModel):
     model: str = Field(..., min_length=1, max_length=100)
     serial_number: str = Field(..., min_length=1, max_length=100)
     location: str = Field(..., min_length=1, max_length=100)
-    collection_id: uuid.UUID = Field(...)
+    user_id: uuid.UUID = Field(...)
     is_active: bool = True
-
-    class Config:
-        from_attributes = True
-
-    @field_validator("name")
-    def name_must_not_be_empty(cls, v):
-        if not v.strip():
-            raise ValueError("Name must not be empty.")
-        return v
-
-
-class Collection(BaseModel):
-    """
-    Domain Entity representing a Collection of Inventory Items.
-    """
-
-    id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    name: str = Field(..., min_length=1, max_length=100)
-    description: str = Field(..., min_length=1, max_length=500)
-    items: list["Item"] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

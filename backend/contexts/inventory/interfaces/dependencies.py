@@ -3,17 +3,12 @@ from typing import Annotated
 from fastapi import Depends
 
 from contexts.inventory.application.command_handlers import (
-    CreateCollectionCommandHandler,
     CreateItemCommandHandler,
-    DeleteCollectionCommandHandler,
     DeleteItemCommandHandler,
-    UpdateCollectionCommandHandler,
     UpdateItemCommandHandler,
 )
 from contexts.inventory.application.query_handlers import (
     GetItemByIdQueryHandler,
-    GetCollectionByIdQueryHandler,
-    ListCollectionsQueryHandler,
     ListItemsQueryHandler,
 )
 from contexts.inventory.domain.repositories import InventoryRepository
@@ -62,39 +57,6 @@ DeleteItemHandler = Annotated[
 ]
 
 
-def get_create_collection_handler(
-    repo: InventoryRepo,
-) -> CreateCollectionCommandHandler:
-    return CreateCollectionCommandHandler(repo)
-
-
-CreateCollectionHandler = Annotated[
-    CreateCollectionCommandHandler, Depends(get_create_collection_handler)
-]
-
-
-def get_update_collection_handler(
-    repo: InventoryRepo,
-) -> UpdateCollectionCommandHandler:
-    return UpdateCollectionCommandHandler(repo)
-
-
-UpdateCollectionHandler = Annotated[
-    UpdateCollectionCommandHandler, Depends(get_update_collection_handler)
-]
-
-
-def get_delete_collection_handler(
-    repo: InventoryRepo,
-) -> DeleteCollectionCommandHandler:
-    return DeleteCollectionCommandHandler(repo)
-
-
-DeleteCollectionHandler = Annotated[
-    DeleteCollectionCommandHandler, Depends(get_delete_collection_handler)
-]
-
-
 # ==========================
 # Query Handler Dependencies
 # ==========================
@@ -115,26 +77,4 @@ def get_list_items_query_handler(repo: InventoryRepo) -> ListItemsQueryHandler:
 
 ListItemsHandler = Annotated[
     ListItemsQueryHandler, Depends(get_list_items_query_handler)
-]
-
-
-def get_collection_by_id_query_handler(
-    repo: InventoryRepo,
-) -> GetCollectionByIdQueryHandler:
-    return GetCollectionByIdQueryHandler(repo)
-
-
-GetCollectionByIdHandler = Annotated[
-    GetCollectionByIdQueryHandler, Depends(get_collection_by_id_query_handler)
-]
-
-
-def get_list_collections_query_handler(
-    repo: InventoryRepo,
-) -> ListCollectionsQueryHandler:
-    return ListCollectionsQueryHandler(repo)
-
-
-ListCollectionsHandler = Annotated[
-    ListCollectionsQueryHandler, Depends(get_list_collections_query_handler)
 ]

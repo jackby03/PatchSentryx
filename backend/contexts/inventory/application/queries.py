@@ -14,20 +14,8 @@ class ItemDTO(BaseModel):
     model: str
     serial_number: str
     location: str
-    collection_id: uuid.UUID
+    user_id: uuid.UUID
     is_active: bool
-
-    class Config:
-        from_attributes = True
-
-
-class CollectionDTO(BaseModel):
-    """DTO for returning collection information to the client."""
-
-    id: uuid.UUID
-    name: str
-    description: str
-    items: list[ItemDTO]
 
     class Config:
         from_attributes = True
@@ -48,16 +36,3 @@ class ListItemsQuery(BaseModel):
     limit: int = 100
     offset: int = 0
     is_active: bool | None = None
-
-
-class GetCollectionByIdQuery(BaseModel):
-    """Represents the parameters needed for the GetCollectionById query."""
-
-    collection_id: uuid.UUID
-
-
-class ListCollectionsQuery(BaseModel):
-    """Represents parameters for listing collections (e.g., pagination, filtering)."""
-
-    limit: int = 100
-    offset: int = 0

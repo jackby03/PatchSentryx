@@ -37,25 +37,3 @@ class DeleteItemCommand(BaseModel):
     """Command to delete an item (example)."""
 
     id: uuid.UUID
-
-
-class CreateCollectionCommand(BaseModel):
-    """Command to create a new collection."""
-
-    name: str = Field(..., min_length=1, max_length=100)
-    description: str = Field(..., min_length=1, max_length=500)
-
-
-class UpdateCollectionCommand(BaseModel):
-    """Command to update an existing collection (example)."""
-
-    id: uuid.UUID
-    name: str | None = Field(None, min_length=1, max_length=100)
-    description: str | None = Field(None, min_length=1, max_length=500)
-    is_active: bool | None = None
-
-
-class DeleteCollectionCommand(BaseModel):
-    """Command to delete a collection (example)."""
-
-    id: uuid.UUID

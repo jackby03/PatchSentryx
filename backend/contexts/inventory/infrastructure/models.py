@@ -17,37 +17,8 @@ class ItemModel(Base):
     model = Column(String(100), nullable=False)
     serial_number = Column(String(100), nullable=False)
     location = Column(String(100), nullable=False)
-    collection_id = Column(
-        Uuid(as_uuid=True),
-        ForeignKey("collections.id", ondelete="CASCADE"),
-        nullable=False,
-    )
+    user_id = Column(Uuid(as_uuid=True), nullable=False)
     is_active = Column(Boolean, default=True)
-
-    collection = relationship(
-        "CollectionModel",
-        back_populates="items",
-        lazy="joined",
-    )
 
     def __repr__(self):
         return f"<InventoryItemModel(id={self.id}, name='{self.name}', hostname='{self.hostname}')>"
-
-
-class CollectionModel(Base):
-    __tablename__ = "collections"
-
-    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String(100), nullable=False)
-    description = Column(String(500), nullable=False)
-    is_active = Column(Boolean, default=True)
-
-    items = relationship(
-        "ItemModel",
-        back_populates="collection",
-        cascade="all, delete-orphan",
-        lazy="selectin",
-    )
-
-    def __repr__(self):
-        return f"<CollectionModel(id={self.id}, name='{self.name}')>"

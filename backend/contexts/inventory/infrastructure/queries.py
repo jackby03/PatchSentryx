@@ -5,9 +5,9 @@ from sqlalchemy import func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from contexts.inventory.domain.entities import Collection, Item
+from contexts.inventory.domain.entities import Item
 from contexts.inventory.infrastructure.mappers import _map_model_to_entity
-from contexts.inventory.infrastructure.models import CollectionModel, ItemModel
+from contexts.inventory.infrastructure.models import ItemModel
 from core.errors import DatabaseError
 
 
@@ -40,28 +40,7 @@ class InventoryQueries:
             print(f"SQLAlchemy: Error listing all items: {e}")
             raise DatabaseError(f"Failed to list all items: {e}")
 
-    # Query operations for Collections
-    async def get_collection_by_id(
-        self, collection_id: uuid.UUID
-    ) -> Optional[Collection]:
-        result = await self.session.execute(
-            select(CollectionModel).where(CollectionModel.id == collection_id)
-        )
-        model = result.scalar_one_or_none()
-        return _map_model_to_entity(model, Collection)
-
-    async def list_collections(self) -> list[Collection]:
-        result = await self.session.execute(select(CollectionModel))
-        models = result.scalars().all()
-        return [_map_model_to_entity(model, Collection) for model in models]
-
     # Additional operations
-    async def get_items_by_collection_id(self, collection_id: uuid.UUID) -> list[Item]:
-        result = await self.session.execute(
-            select(ItemModel).where(ItemModel.collection_id == collection_id)
-        )
-        models = result.scalars().all()
-        return [_map_model_to_entity(model, Item) for model in models]
 
     async def search_items(self, query: str) -> list[Item]:
         keywords = query.split()

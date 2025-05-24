@@ -22,77 +22,78 @@ from core.errors import DomainError, EntityNotFoundError
 
 router = APIRouter()
 
-# --- Command Endpoints ---
-
-
-@router.post(
-    "/",
-    response_model=UserDTO,  # Return DTO of the created user
-    status_code=status.HTTP_201_CREATED,
-    summary="Register a new user (via async command)",
-    description="Accepts user registration details and publishes a command to create the user asynchronously.",
-)
-async def register_user_command(
-    # Option 1: Get channel and publisher manually
-    channel: MqChannel,
-    command_data: CreateUserCommand = Body(...),
-    # Option 2: Inject publisher directly (if publisher dependency is set up)
-    # publisher: UserCmdPublisher,
-    # command_data: CreateUserCommand = Body(...),
-):
-    """
-    Handles the request to create a new user by publishing a command to RabbitMQ.
-    """
-    publisher = UserCommandPublisher(channel)  # Manual instantiation with channel
-
-    try:
-        command = CreateUserCommand(**command_data.model_dump())
-
-        await publisher.publish_create_user_command(command)
-
-        return JSONResponse(
-            status_code=status.HTTP_202_ACCEPTED,
-            content={
-                "message": "User creation request accepted.",
-                "email": command.email,
-            },
-        )
-
-    except DomainError as e:
-        # This specific error shouldn't happen here if publishing, but handle just in case
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    except Exception as e:
-        # Log the exception
-        print(f"Error publishing create user command: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to publish user creation command.",
-        )
-
 
 # --- Direct Command Handling Endpoint (Alternative/Example) ---
 # Use this if you want synchronous user creation via the API for some reason
+@router.post(
+    "/",
+    response_model=UserDTO,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user (synchronously)",
+    description="Handles user registration directly without message queue.",
+)
+async def create_user_sync(
+    handler: CreateUserHandler,  # Inject the command handler
+    command: CreateUserCommand = Body(...),
+):
+    try:
+        created_user = await handler.handle(command)
+        return UserDTO.model_validate(created_user)
+    except DomainError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    except Exception as e:
+        # Log the exception e
+        print(f"Error creating user synchronously: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred during user creation.",
+        )
+
+
+# --- Command Endpoints ---
 # @router.post(
-#     "/sync",
-#     response_model=UserDTO,
+#     "/",
+#     response_model=UserDTO,  # Return DTO of the created user
 #     status_code=status.HTTP_201_CREATED,
-#     summary="Register a new user (synchronously)",
-#     description="Handles user registration directly without message queue.",
+#     summary="Register a new user (via async command)",
+#     description="Accepts user registration details and publishes a command to create the user asynchronously.",
 # )
-# async def create_user_sync(
-#     handler: CreateUserHandler, # Inject the command handler
-#     command: CreateUserCommand = Body(...)
+# async def register_user_command(
+#     # Option 1: Get channel and publisher manually
+#     channel: MqChannel,
+#     command_data: CreateUserCommand = Body(...),
+#     # Option 2: Inject publisher directly (if publisher dependency is set up)
+#     # publisher: UserCmdPublisher,
+#     # command_data: CreateUserCommand = Body(...),
 # ):
+#     """
+#     Handles the request to create a new user by publishing a command to RabbitMQ.
+#     """
+#     publisher = UserCommandPublisher(channel)  # Manual instantiation with channel
+
 #     try:
-#         created_user = await handler.handle(command)
-#         return UserDTO.model_validate(created_user)
-#     except DomainError as e: # Catch specific domain errors like duplicate email
+#         command = CreateUserCommand(**command_data.model_dump())
+
+#         await publisher.publish_create_user_command(command)
+
+#         return JSONResponse(
+#             status_code=status.HTTP_202_ACCEPTED,
+#             content={
+#                 "message": "User creation request accepted.",
+#                 "email": command.email,
+#             },
+#         )
+
+#     except DomainError as e:
+#         # This specific error shouldn't happen here if publishing, but handle just in case
 #         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
 #     except Exception as e:
-#         # Log the exception e
-#         print(f"Error creating user synchronously: {e}")
-#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred during user creation.")
-
+#         # Log the exception
+#         print(f"Error publishing create user command: {e}")
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="Failed to publish user creation command.",
+#         )
 
 # --- Query Endpoints ---
 

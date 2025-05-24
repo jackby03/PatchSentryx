@@ -1,10 +1,7 @@
-from typing import Any, Type, TypeVar, Optional, Union
+from typing import Optional, Type, TypeVar
 
-from contexts.inventory.domain.entities import Collection, Item
-from contexts.inventory.infrastructure.models import CollectionModel, ItemModel
-
-T = TypeVar("T")  # Generic type for the domain entity
-M = TypeVar("M")  # Generic type for the SQLAlchemy model
+T = TypeVar("T")
+M = TypeVar("M")
 
 
 def _map_model_to_entity(model: M, entity_class: Type[T]) -> T:
