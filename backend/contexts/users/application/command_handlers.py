@@ -1,9 +1,11 @@
 from contexts.users.application.commands import (
     CreateUserCommand,
+    DeleteUserCommand,
+    UpdateUserCommand,
 )
 from contexts.users.domain.entities import User
 from contexts.users.domain.repositories import UserRepository
-from core.errors import DomainError
+from core.errors import DomainError, EntityNotFoundError
 
 
 class CreateUserCommandHandler:
@@ -13,12 +15,7 @@ class CreateUserCommandHandler:
         self.user_repository = user_repository
 
     async def handle(self, command: CreateUserCommand) -> User:
-        """
-        Executes the command to create a user.
-
-        Raises:
-            DomainError: If a user with the given email already exists.
-        """
+        """Executes the command to create a user."""
         print(f"Handling CreateUserCommand for email: {command.email}")
 
         existing_user = await self.user_repository.get_by_email(command.email)
@@ -40,40 +37,36 @@ class CreateUserCommandHandler:
 
 
 # --- Add other command handlers here ---
+class UpdateUserCommandHandler:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
 
-# class UpdateUserCommandHandler:
-#     def __init__(self, user_repository: UserRepository):
-#         self.user_repository = user_repository
-#
-#     async def handle(self, command: UpdateUserCommand):
-#         user = await self.user_repository.get_by_id(command.user_id)
-#         if not user:
-#             raise EntityNotFoundError("User", command.user_id)
-#
-#         # Apply updates...
-#         if command.name is not None:
-#             user.name = command.name # Assuming direct update or add a method user.change_name()
-#         if command.is_active is not None:
-#             if command.is_active:
-#                 user.activate()
-#             else:
-#                 user.deactivate()
-#
-#         await self.user_repository.update(user)
-#         print(f"User {user.id} updated.")
+    async def handle(self, command: UpdateUserCommand):
+        user = await self.user_repository.get_by_id(command.user_id)
+        if not user:
+            raise EntityNotFoundError("User", command.user_id)
+
+        if command.name is not None:
+            user.name = command.name
+        if command.is_active is not None:
+            if command.is_active:
+                user.activate()
+            else:
+                user.deactivate()
+
+        await self.user_repository.update(user)
+        print(f"User {user.id} updated.")
 
 
-# class DeleteUserCommandHandler:
-#     def __init__(self, user_repository: UserRepository):
-#         self.user_repository = user_repository
-#
-#     async def handle(self, command: DeleteUserCommand):
-#         # Check if user exists first (optional, delete might be idempotent)
-#         user = await self.user_repository.get_by_id(command.user_id)
-#         if not user:
-#             # Decide whether to raise error or silently succeed
-#             print(f"User {command.user_id} not found for deletion, skipping.")
-#             return
-#
-#         await self.user_repository.delete(command.user_id)
-#         print(f"User {command.user_id} deleted.")
+class DeleteUserCommandHandler:
+    def __init__(self, user_repository: UserRepository):
+        self.user_repository = user_repository
+
+    async def handle(self, command: DeleteUserCommand):
+        user = await self.user_repository.get_by_id(command.user_id)
+        if not user:
+            print(f"User {command.user_id} not found for deletion, skipping.")
+            return
+
+        await self.user_repository.delete(command.user_id)
+        print(f"User {command.user_id} deleted.")
