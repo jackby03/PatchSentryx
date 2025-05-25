@@ -21,6 +21,7 @@ class Item(BaseModel):
 
     class Config:
         from_attributes = True
+        orm_mode = True
 
     @field_validator("name")
     def name_must_not_be_empty(cls, v):

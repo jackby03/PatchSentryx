@@ -16,7 +16,6 @@ class SQLAlchemyInventoryRepository(InventoryRepository):
         self.commands = InventoryCommands(session)
         self.queries = InventoryQueries(session)
 
-    # CRUD operations for Item
     # Query operations
     async def get_item_by_id(self, item_id: uuid.UUID) -> Optional[Item]:
         return await self.queries.get_item_by_id(item_id)
@@ -41,3 +40,6 @@ class SQLAlchemyInventoryRepository(InventoryRepository):
 
     async def count_items(self, is_active: Optional[bool] = None) -> None:
         return await self.queries.count_items(is_active)
+
+    async def get_items_by_user_id(self, user_id: uuid.UUID) -> None:
+        return await self.queries.get_items_by_user_id(user_id)

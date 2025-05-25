@@ -15,7 +15,6 @@ class CreateItemCommandHandler:
         self.repository = repository
 
     async def handle(self, command: CreateItemCommand) -> Item:
-        print(f"Handling CreateItemCommand for {command.name}")
         item = Item(
             name=command.name,
             hostname=command.hostname,
@@ -24,9 +23,12 @@ class CreateItemCommandHandler:
             model=command.model,
             serial_number=command.serial_number,
             location=command.location,
+            user_id=command.user_id,
+            is_active=command.is_active,
         )
+        print(f"Creating item entity: {item}")
         await self.repository.add_item(item)
-        print(f"Created item {item.id} successfully.")
+        print(f"Item created successfully with ID: {item.id}")
         return item
 
 

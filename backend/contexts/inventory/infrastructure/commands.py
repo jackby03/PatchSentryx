@@ -23,7 +23,7 @@ class InventoryCommands:
             print(f"SQLAlchemy: Flushed item {item.id}.")
         except Exception as e:
             print(f"SQLAlchemy: Error adding item: {e}")
-            raise DatabaseError(f"Failed to add item: {e}")
+            raise DatabaseError(f"Failed to add item: {e}")  # noqa: B904
 
     async def update_item(self, item: Item) -> None:
         print(f"SQLAlchemy: Updating item {item.id}")
@@ -36,7 +36,7 @@ class InventoryCommands:
             print(f"SQLAlchemy: Flushed item {item.id}.")
         except Exception as e:
             print(f"SQLAlchemy: Error updating item: {e}")
-            raise DatabaseError(f"Failed to update item: {e}")
+            raise DatabaseError(f"Failed to update item: {e}")  # noqa: B904
 
     async def delete_item(self, item_id: uuid.UUID) -> None:
         print(f"SQLAlchemy: Deleting item {item_id}")
@@ -51,4 +51,4 @@ class InventoryCommands:
             await self.session.flush()
         except Exception as e:
             print(f"SQLAlchemy: Error deleting item: {e}")
-            raise DatabaseError(f"Failed to delete item: {e}")
+            raise DatabaseError(f"Failed to delete item: {e}")  # noqa: B904

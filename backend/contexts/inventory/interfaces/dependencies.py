@@ -30,30 +30,30 @@ InventoryRepo = Annotated[InventoryRepository, Depends(get_inventory_repository)
 # ==========================
 
 
-def get_create_item_handler(repo: InventoryRepo) -> CreateItemCommandHandler:
+def get_create_item_command_handler(repo: InventoryRepo) -> CreateItemCommandHandler:
     return CreateItemCommandHandler(repo)
 
 
 CreateItemHandler = Annotated[
-    CreateItemCommandHandler, Depends(get_create_item_handler)
+    CreateItemCommandHandler, Depends(get_create_item_command_handler)
 ]
 
 
-def get_update_item_handler(repo: InventoryRepo) -> UpdateItemCommandHandler:
+def get_update_item_command_handler(repo: InventoryRepo) -> UpdateItemCommandHandler:
     return UpdateItemCommandHandler(repo)
 
 
 UpdateItemHandler = Annotated[
-    UpdateItemCommandHandler, Depends(get_update_item_handler)
+    UpdateItemCommandHandler, Depends(get_update_item_command_handler)
 ]
 
 
-def get_delete_item_handler(repo: InventoryRepo) -> DeleteItemCommandHandler:
+def get_delete_item_command_handler(repo: InventoryRepo) -> DeleteItemCommandHandler:
     return DeleteItemCommandHandler(repo)
 
 
 DeleteItemHandler = Annotated[
-    DeleteItemCommandHandler, Depends(get_delete_item_handler)
+    DeleteItemCommandHandler, Depends(get_delete_item_command_handler)
 ]
 
 

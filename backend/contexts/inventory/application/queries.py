@@ -36,3 +36,26 @@ class ListItemsQuery(BaseModel):
     limit: int = 100
     offset: int = 0
     is_active: bool | None = None
+
+
+class SearchItemsQuery(BaseModel):
+    """Represents parameters for searching items."""
+
+    query: str
+    limit: int = 100
+    offset: int = 0
+    is_active: bool | None = None
+
+
+class CountItemsQuery(BaseModel):
+    """Represents parameters for counting items."""
+
+    is_active: bool | None = None
+
+
+class GetItemsByUserIdQuery(BaseModel):
+    """Represents parameters for getting items by user ID."""
+
+    user_id: uuid.UUID
+    limit: int = 100
+    offset: int = 0

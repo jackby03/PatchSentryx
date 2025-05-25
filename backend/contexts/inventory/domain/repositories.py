@@ -26,6 +26,21 @@ class InventoryRepository(abc.ABC):
         """Lists all inventory items in the repository."""
         raise NotImplementedError
 
+    @abc.abstractmethod
+    async def search_items(self, query: str) -> list[Item]:
+        """Searches for items based on a query string."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def count_items(self, is_active: Optional[bool] = None) -> int:
+        """Counts the number of items, optionally filtering by active status."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    async def get_items_by_user_id(self, user_id: uuid.UUID) -> list[Item]:
+        """Retrieves all items associated with a specific user ID."""
+        raise NotImplementedError
+
     # Command operations
     @abc.abstractmethod
     async def add_item(self, item: Item) -> None:
@@ -40,16 +55,4 @@ class InventoryRepository(abc.ABC):
     @abc.abstractmethod
     async def delete_item(self, item_id: uuid.UUID) -> None:
         """Deletes an inventory item from the repository."""
-        raise NotImplementedError
-
-    # Additional operations
-
-    @abc.abstractmethod
-    async def search_items(self, query: str) -> list[Item]:
-        """Searches for items based on a query string."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    async def count_items(self, is_active: Optional[bool] = None) -> int:
-        """Counts the number of items, optionally filtering by active status."""
         raise NotImplementedError

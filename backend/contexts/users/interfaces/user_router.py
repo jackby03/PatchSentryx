@@ -1,14 +1,14 @@
-import json
+import json  # noqa: F401
 import uuid
-from typing import Annotated, List
+from typing import Annotated, List  # noqa: F401
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse  # noqa: F401
 
 from contexts.users.application.commands import CreateUserCommand
 from contexts.users.application.queries import GetUserByIdQuery, ListUsersQuery, UserDTO
 from contexts.users.infrastructure.messaging import (
-    UserCommandPublisher,
+    UserCommandPublisher,  # noqa: F401
 )  # Import publisher logic
 from contexts.users.interfaces.dependencies import (  # Use handler dependencies directly now; UserCmdPublisher, # Dependency for direct publishing if needed
     CreateUserHandler,
@@ -16,7 +16,7 @@ from contexts.users.interfaces.dependencies import (  # Use handler dependencies
     ListUsersHandler,
 )
 from core.dependencies import (
-    MqChannel,
+    MqChannel,  # noqa: F401
 )  # Import channel dependency for direct publishing
 from core.errors import DomainError, EntityNotFoundError
 
@@ -34,17 +34,17 @@ router = APIRouter()
 )
 async def create_user_sync(
     handler: CreateUserHandler,  # Inject the command handler
-    command: CreateUserCommand = Body(...),
+    command: CreateUserCommand = Body(...),  # noqa: B008
 ):
     try:
         created_user = await handler.handle(command)
         return UserDTO.model_validate(created_user)
     except DomainError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))  # noqa: B904
     except Exception as e:
         # Log the exception e
         print(f"Error creating user synchronously: {e}")
-        raise HTTPException(
+        raise HTTPException(  # noqa: B904
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred during user creation.",
         )
@@ -121,11 +121,11 @@ async def get_user(
             )
         return user_dto
     except EntityNotFoundError as e:  # Catch specific errors if handler raises them
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))  # noqa: B904
     except Exception as e:
         print(f"Error getting user by ID {user_id}: {e}")
         # Log the exception
-        raise HTTPException(
+        raise HTTPException(  # noqa: B904
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while retrieving the user.",
         )
@@ -140,7 +140,7 @@ async def get_user(
 async def list_users(
     handler: ListUsersHandler,  # Inject the query handler
     # Use FastAPI's Depends for query parameters to automatically map to ListUsersQuery
-    query_params: ListUsersQuery = Depends(),
+    query_params: ListUsersQuery = Depends(),  # noqa: B008
 ):
     """
     Retrieves a list of users, potentially with filtering and pagination.
@@ -152,7 +152,7 @@ async def list_users(
     except Exception as e:
         print(f"Error listing users: {e}")
         # Log the exception
-        raise HTTPException(
+        raise HTTPException(  # noqa: B904
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while listing users.",
         )

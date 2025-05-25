@@ -27,10 +27,10 @@ class InventoryQueries:
             return None
         except Exception as e:
             print(f"SQLAlchemy: Error getting item by ID: {e}")
-            raise DatabaseError(f"Failed to get item by ID: {e}")
+            raise DatabaseError(f"Failed to get item by ID: {e}")  # noqa: B904
 
     async def list_all_items(self) -> list[object]:
-        print(f"SQLAlchemy: Listing all items (Warning: No pagination)")
+        print(f"SQLAlchemy: Listing all items (Warning: No pagination)")  # noqa: F541
         try:
             stmt = select(ItemModel).order_by(ItemModel.id)
             result = await self.session.execute(stmt)
@@ -38,7 +38,7 @@ class InventoryQueries:
             return [_map_model_to_entity(model, Item) for model in models]
         except Exception as e:
             print(f"SQLAlchemy: Error listing all items: {e}")
-            raise DatabaseError(f"Failed to list all items: {e}")
+            raise DatabaseError(f"Failed to list all items: {e}")  # noqa: B904
 
     # Additional operations
 
@@ -66,3 +66,14 @@ class InventoryQueries:
             stmt = stmt.where(ItemModel.is_active == is_active)
         result = await self.session.execute(stmt)
         return result.scalar_one()
+
+    async def get_items_by_user_id(self, user_id: uuid.UUID) -> list[Item]:
+        print(f"SQLAlchemy: Getting items by user ID: {user_id}")
+        try:
+            stmt = select(ItemModel).where(ItemModel.user_id == user_id)
+            result = await self.session.execute(stmt)
+            models = result.scalars().all()
+            return [_map_model_to_entity(model, Item) for model in models]
+        except Exception as e:
+            print(f"SQLAlchemy: Error getting items by user ID: {e}")
+            raise DatabaseError(f"Failed to get items by user ID: {e}")  # noqa: B904

@@ -1,12 +1,16 @@
 import uuid
 
-from sqlalchemy import Boolean, Column, ForeignKey, String, Uuid
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, String, Uuid
 
 from core.database import Base
 
 
 class ItemModel(Base):
+    """
+    SQLAlchemy ORM Model for representing the Item entity in the database.
+    This model is used to map the Item entity to a database table.
+    """
+
     __tablename__ = "inventory_items"
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
